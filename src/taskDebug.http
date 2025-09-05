@@ -1,0 +1,15 @@
+###
+POST http://localhost:8080/2/tasks
+Content-Type: application/json
+
+{
+  "title": "sampleTask3",
+  "description": "desc"
+}
+
+###
+GET http://localhost:8080/2/tasks
+###
+DELETE http://localhost:8080/1/tasks/1
+###
+GET http://localhost:8080/1/tasks/2

@@ -1,0 +1,25 @@
+###
+
+GET http://localhost:8080/2/groups
+
+###
+POST http://localhost:8080/2/groups
+Content-Type: application/json
+
+{
+  "name" : "waiter"
+}
+
+###
+
+PUT http://localhost:8080/2/groups
+Content-Type: application/json
+
+{
+  "id" : 12,
+  "name" : "cook"
+}
+
+###
+
+DELETE http://localhost:8080/2/groups/11

@@ -1,0 +1,19 @@
+###
+
+POST http://localhost:8080/login
+Content-Type: application/x-www-form-urlencoded
+
+username=sampleUser&password=coderslab
+
+###
+POST http://localhost:8080/login
+Content-Type: application/x-www-form-urlencoded
+
+username=sampleOwner&password=coderslab
+
+###
+
+POST http://localhost:8080/login
+Content-Type: application/x-www-form-urlencoded
+
+username=sampleUser1&password=coderslab

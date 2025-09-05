@@ -1,0 +1,15 @@
+###
+POST http://localhost:8080/workplaces
+Content-Type: application/json
+
+{
+  "name": "sampleWorkplace"
+}
+
+###
+GET http://localhost:8080/workplaces
+
+###
+PUT http://localhost:8080/workplaces/1
+###
+DELETE http://localhost:8080/workplaces/1

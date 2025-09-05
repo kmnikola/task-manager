@@ -1,0 +1,32 @@
+package pl.coderslab.workplace;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import pl.coderslab.category.Category;
+import pl.coderslab.profile.Profile;
+import pl.coderslab.workplaceGroup.WorkplaceGroup;
+import pl.coderslab.task.Task;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "workplaces")
+@Getter
+@Setter
+public class Workplace {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL)
+    private List<Profile> profiles = new ArrayList<>();
+    @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL)
+    private List<Task> tasks = new ArrayList<>();
+    @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL)
+    private List<Category> categories = new ArrayList<>();
+    @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL)
+    private List<WorkplaceGroup> workplaceGroups = new ArrayList<>();
+}
