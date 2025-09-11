@@ -1,27 +1,30 @@
 package pl.coderslab.workplace;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import pl.coderslab.auth.CurrentUser;
+import pl.coderslab.events.WorkplaceCreatedEvent;
 import pl.coderslab.profile.Profile;
 import pl.coderslab.profile.ProfileService;
 import pl.coderslab.workplaceGroup.WorkplaceGroup;
 import pl.coderslab.workplaceGroup.WorkplaceGroupService;
 import pl.coderslab.user.User;
-import pl.coderslab.user.UserService;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
 public class WorkplaceService {
     private final WorkplaceRepository workplaceRepository;
     private final WorkplaceGroupService workplaceGroupService;
+    private final ApplicationEventPublisher eventPublisher;
     private final ProfileService profileService;
 
-    public WorkplaceService(WorkplaceRepository workplaceRepository, WorkplaceGroupService workplaceGroupService, ProfileService profileService) {
+    public WorkplaceService(WorkplaceRepository workplaceRepository, WorkplaceGroupService workplaceGroupService, ProfileService profileService, ApplicationEventPublisher eventPublisher) {
         this.workplaceRepository = workplaceRepository;
         this.workplaceGroupService = workplaceGroupService;
         this.profileService = profileService;
+        this.eventPublisher = eventPublisher;
     }
 
     public List<Workplace> getAllWorkplaces(CurrentUser currentUser) {
@@ -45,14 +48,22 @@ public class WorkplaceService {
 
     public void createWorkplace(CurrentUser currentUser, Workplace workplace) {
         workplaceRepository.save(workplace);
-
-        //Create initial roles
-        List<WorkplaceGroup> initialWorkplaceGroups = workplaceGroupService.createInitialWorkplaceGroups(workplace);
-        initialWorkplaceGroups.forEach(workplaceGroupService::save);
-
         User user = currentUser.getUser();
+        //Create initial roles
+        List<WorkplaceGroup> groups = Arrays.asList(
+                WorkplaceGroup.builder()
+                        .name("owner")
+                        .build(),
+                WorkplaceGroup.builder()
+                        .name("user")
+                        .build()
+        );
+
+        eventPublisher.publishEvent(
+                new WorkplaceCreatedEvent(user, groups, workplace.getId())
+        );
         //Create a new profile for the user
-        Profile profile = profileService.createInitialWorkplaceProfile(user, workplace, initialWorkplaceGroups.get(0));
+        Profile profile = profileService.createInitialWorkplaceProfile(user, workplace, groups.get(0));
         profileService.save(profile);
     }
 

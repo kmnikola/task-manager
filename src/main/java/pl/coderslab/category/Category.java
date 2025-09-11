@@ -26,13 +26,6 @@ public class Category {
     @JsonIgnore
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<Task> tasks;
-    @ManyToMany
-    @JoinTable(
-            name = "category_workplace_group",
-            joinColumns = @JoinColumn(name = "category_id"),
-            inverseJoinColumns = @JoinColumn(name = "workplace_group_id")
-    )
-    private List<WorkplaceGroup> workplaceGroups;
     @JsonIgnore
     @ManyToOne
     private Workplace workplace;

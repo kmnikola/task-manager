@@ -38,13 +38,13 @@ public class WorkplaceController {
         workplaceService.joinWorkplace(currentUser, workplaceId);
     }
 
-    @PreAuthorize("@workplaceAccess.canEdit(authentication, #workplace.getId())")
+    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace.getId())")
     @PutMapping("")
     public void updateWorkplace(@RequestBody Workplace workplace) {
         workplaceService.updateWorkplace(workplace);
     }
 
-    @PreAuthorize("@workplaceAccess.canEdit(authentication, #workplace_id)")
+    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id)")
     @DeleteMapping("/{workplace_id}")
     public void deleteWorkplace(@PathVariable("workplace_id") Long workplace_id) {
         workplaceService.deleteWorkplace(workplace_id);

@@ -19,23 +19,23 @@ public class WorkplaceAccessEvaluator {
         this.profileService = profileService;
     }
 
-    public boolean canAccess(Authentication auth, Long workplaceId) {
+    public boolean canAccessWorkplace(Authentication auth, Long workplaceId) {
         CurrentUser currentUser = (CurrentUser) auth.getPrincipal();
         return workplaceService.getAllWorkplaces(currentUser).contains(workplaceService.getWorkplaceById(currentUser, workplaceId));
     }
 
     public boolean belongsToGroup(Authentication auth, Long workplaceId, Long workplaceGroupId) {
         CurrentUser currentUser = (CurrentUser) auth.getPrincipal();
-        if (canAccess(auth, workplaceId)) {
+        if (canAccessWorkplace(auth, workplaceId)) {
             Profile profile = profileService.getProfileByWorkplaceIdAndUserId(workplaceId, currentUser.getUser().getId());
             return profile.getWorkplaceGroup() == workplaceGroupService.getById(workplaceGroupId) || profile.getWorkplaceGroup().getName().equals("owner");
         }
         return false;
     }
 
-    public boolean canEdit(Authentication auth, Long workplaceId) {
+    public boolean canEditWorkplace(Authentication auth, Long workplaceId) {
         CurrentUser currentUser = (CurrentUser) auth.getPrincipal();
-        if (canAccess(auth, workplaceId)) {
+        if (canAccessWorkplace(auth, workplaceId)) {
             Profile profile = profileService.getProfileByWorkplaceIdAndUserId(workplaceId, currentUser.getUser().getId());
             return profile.getWorkplaceGroup() == workplaceGroupService.getWorkplaceGroupByWorkplaceIdAndName(workplaceId, "owner");
         }

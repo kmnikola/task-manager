@@ -16,26 +16,26 @@ public class WorkplaceGroupController {
         this.workplaceService = workplaceService;
     }
 
-    @PreAuthorize("@workplaceAccess.canAccess(authentication, #workplace_id)")
+    @PreAuthorize("@workplaceAccess.canAccessWorkplace(authentication, #workplace_id)")
     @GetMapping("")
     public List<WorkplaceGroup> getWorkplaceGroups(@PathVariable("workplace_id") Long workplace_id) {
-        return workplaceGroupService.getWorkplaceGroups(workplace_id);
+        return workplaceGroupService.getWorkplaceGroupsInWorkplace(workplace_id);
     }
 
-    @PreAuthorize("@workplaceAccess.canEdit(authentication, #workplace_id)")
+    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id)")
     @PostMapping("")
     public void addWorkplaceGroup(@RequestBody WorkplaceGroup workplaceGroup, @PathVariable("workplace_id") Long workplace_id) {
         workplaceGroup.setWorkplace(workplaceService.getWorkplaceById(workplace_id));
         workplaceGroupService.addWorkplaceGroup(workplaceGroup, workplace_id);
     }
 
-    @PreAuthorize("@workplaceAccess.canEdit(authentication, #workplace_id)")
+    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@groupAccess.groupBelongsToWorkplace(workplaceGroup, workplace_id)")
     @PutMapping("")
     public void editWorkplaceGroup(@RequestBody WorkplaceGroup workplaceGroup, @PathVariable("workplace_id") Long workplace_id) {
         workplaceGroupService.update(workplaceGroup);
     }
 
-    @PreAuthorize("@workplaceAccess.canEdit(authentication, #workplace_id)")
+    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@groupAccess.groupBelongsToWorkplace(group_id, workplace_id)")
     @DeleteMapping("/{group_id}")
     public void deleteWorkplaceGroup(@PathVariable("workplace_id") Long workplace_id, @PathVariable("group_id") Long group_id) {
         workplaceGroupService.deleteById(group_id);

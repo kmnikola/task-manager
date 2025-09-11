@@ -1,7 +1,10 @@
 package pl.coderslab.workplaceGroup;
 
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-import pl.coderslab.workplace.Workplace;
+import org.springframework.transaction.annotation.Transactional;
+import pl.coderslab.events.WorkplaceCreatedEvent;
+import pl.coderslab.workplace.WorkplaceRepository;
 import pl.coderslab.workplace.WorkplaceService;
 
 import java.util.Arrays;
@@ -10,11 +13,14 @@ import java.util.List;
 @Service
 public class WorkplaceGroupService {
     private final WorkplaceGroupRepository workplaceGroupRepository;
-    public WorkplaceGroupService(WorkplaceGroupRepository workplaceGroupRepository) {
+    private final WorkplaceRepository workplaceRepository;
+
+    public WorkplaceGroupService(WorkplaceGroupRepository workplaceGroupRepository, WorkplaceRepository workplaceRepository) {
         this.workplaceGroupRepository = workplaceGroupRepository;
+        this.workplaceRepository = workplaceRepository;
     }
 
-    public List<WorkplaceGroup> getWorkplaceGroups(Long workplaceId) {
+    public List<WorkplaceGroup> getWorkplaceGroupsInWorkplace(Long workplaceId) {
         return workplaceGroupRepository.findAllByWorkplaceId(workplaceId);
     }
 
@@ -27,24 +33,8 @@ public class WorkplaceGroupService {
     }
 
     public void addWorkplaceGroup(WorkplaceGroup workplaceGroup, Long workplaceId) {
-        save(workplaceGroup);
-    }
-
-    public void save(WorkplaceGroup workplaceGroup) {
+        workplaceGroup.setWorkplace(workplaceRepository.findById(workplaceId).orElseThrow());
         workplaceGroupRepository.save(workplaceGroup);
-    }
-
-    public List<WorkplaceGroup> createInitialWorkplaceGroups(Workplace workplace) {
-        return Arrays.asList(
-                WorkplaceGroup.builder()
-                        .name("owner")
-                        .workplace(workplace)
-                        .build(),
-                WorkplaceGroup.builder()
-                        .name("user")
-                        .workplace(workplace)
-                        .build()
-        );
     }
 
     public void update(WorkplaceGroup workplaceGroup) {
@@ -52,10 +42,18 @@ public class WorkplaceGroupService {
         if (workplaceGroup.getName() != null) {
             groupInDB.setName(workplaceGroup.getName());
         }
-        save(groupInDB);
+        workplaceGroupRepository.save(workplaceGroup);
     }
 
     public void deleteById(Long groupId) {
         workplaceGroupRepository.deleteById(groupId);
+    }
+
+    @EventListener
+    @Transactional
+    public void handleWorkplaceCreatedEvent(WorkplaceCreatedEvent event) {
+        for (WorkplaceGroup group : event.groups()) {
+            addWorkplaceGroup(group, event.workplaceId());
+        }
     }
 }

@@ -3,6 +3,7 @@ package pl.coderslab.task;
 import org.springframework.stereotype.Service;
 import pl.coderslab.category.Category;
 import pl.coderslab.category.CategoryService;
+import pl.coderslab.recurrence.Recurrence;
 import pl.coderslab.workplace.WorkplaceService;
 import pl.coderslab.workplaceGroup.WorkplaceGroup;
 import pl.coderslab.workplaceGroup.WorkplaceGroupService;
@@ -35,9 +36,12 @@ public class TaskService {
         return taskRepository.findAllByWorkplaceIdAndWorkplaceGroupId(workplaceId, workplaceGroupId);
     }
 
+    public List<Task> getAllTasksByCategoryId(Long workplaceId, Long categoryId) {
+        return taskRepository.findAllByWorkplaceIdAndCategoryId(workplaceId, categoryId);
+    }
+
     public void addTaskToWorkplace(Task task, Long workplaceId) {
         WorkplaceGroup ownerGroup = workplaceGroupService.getWorkplaceGroupByWorkplaceIdAndName(workplaceId, "owner");
-        //remove later
         WorkplaceGroup userGroup = workplaceGroupService.getWorkplaceGroupByWorkplaceIdAndName(workplaceId, "user");
         task.setWorkplace(workplaceService.getWorkplaceById(workplaceId));
         task.getWorkplaceGroups().add(ownerGroup);
@@ -45,74 +49,69 @@ public class TaskService {
         taskRepository.save(task);
     }
 
-    public void deleteById(Long taskId, Long workplace_id) {
-        if (workplaceService.getWorkplaceById(workplace_id).getTasks().contains(getTaskById(taskId))) {
-            taskRepository.deleteById(taskId);
+    public void deleteById(Long taskId) {
+        taskRepository.deleteById(taskId);
+    }
+
+    public void updateTask(Task task) {
+        Task taskInDb = getTaskById(task.getId());
+        if (task.getTitle() != null) {
+            taskInDb.setTitle(task.getTitle());
+        }
+        if (task.getDescription() != null) {
+            taskInDb.setDescription(task.getDescription());
+        }
+        if (task.getCategory() != null) {
+            taskInDb.setCategory(task.getCategory());
+        }
+        taskRepository.save(taskInDb);
+    }
+
+    public void toggleActive(Long taskId) {
+        Task task = getTaskById(taskId);
+        task.setActive(!task.isActive());
+        taskRepository.save(task);
+    }
+
+    public void activateTask(Task task) {
+        if (!task.isActive()) {
+            task.setActive(true);
+            taskRepository.save(task);
+            System.out.println("Task " + task.getTitle() + " activated");
+        } else {
+            System.out.println("Task " + task.getTitle() + " already activated");
         }
     }
 
-    public void updateTask(Task task, Long workplace_id) {
-        if (workplaceService.getWorkplaceById(workplace_id).getTasks().contains(task)) {
-            Task taskInDb = taskRepository.findById(task.getId()).orElseThrow();
-            if (task.getTitle() != null) {
-                taskInDb.setTitle(task.getTitle());
-            }
-            if (task.getDescription() != null) {
-                taskInDb.setDescription(task.getDescription());
-            }
-            if (task.getCategory() != null) {
-                taskInDb.setCategory(task.getCategory());
-            }
-            taskRepository.save(taskInDb);
-        }
+    public void addGroupToTask(Long groupId, Long taskId) {
+        Task task = getTaskById(taskId);
+        task.getWorkplaceGroups().add(workplaceGroupService.getById(groupId));
+        taskRepository.save(task);
     }
 
-    public void addGroupToTask(Long groupId, Long taskId, Long workplace_id) {
-        if (workplaceService.getWorkplaceById(workplace_id).getTasks().contains(getTaskById(taskId))) {
-            Task task = getTaskById(taskId);
-            WorkplaceGroup group = workplaceGroupService.getById(groupId);
-            if (task.getWorkplace().getWorkplaceGroups().contains(group)) {
-                task.getWorkplaceGroups().add(group);
-                taskRepository.save(task);
-            }
-        }
+    public void addRecurrenceToTask(Long taskId, Recurrence recurrence) {
+        Task task = getTaskById(taskId);
+        task.getRecurrences().add(recurrence);
+        taskRepository.save(task);
     }
 
-    public void removeGroupFromTask(Long groupId, Long taskId, Long workplace_id) {
-        if (workplaceService.getWorkplaceById(workplace_id).getTasks().contains(getTaskById(taskId))) {
-            Task task = getTaskById(taskId);
-            WorkplaceGroup group = workplaceGroupService.getById(groupId);
-            if (task.getWorkplace().getWorkplaceGroups().contains(group)) {
-                task.getWorkplaceGroups().remove(group);
-            }
-        }
+    public void removeGroupFromTask(Long groupId, Long taskId) {
+        getTaskById(taskId).getWorkplaceGroups().remove(workplaceGroupService.getById(groupId));
     }
 
-    public void setCategoryToTask(Long categoryId, Long taskId, Long workplace_id) {
-        if (workplaceService.getWorkplaceById(workplace_id).getTasks().contains(getTaskById(taskId))) {
-            Task task = getTaskById(taskId);
-            Category category = categoryService.getById(categoryId);
-            if (task.getWorkplace().getCategories().contains(category)) {
-                task.setCategory(category);
-                for (WorkplaceGroup group : category.getWorkplaceGroups()) {
-                    task.getWorkplaceGroups().add(group);
-                }
-                taskRepository.save(task);
-            }
-        }
+    public void setCategoryToTask(Long categoryId, Long taskId) {
+        Task task = getTaskById(taskId);
+        task.setCategory(categoryService.getById(categoryId));
+        taskRepository.save(task);
     }
 
-    public void removeCategoryFromTask(Long categoryId, Long taskId, Long workplace_id) {
-        if (workplaceService.getWorkplaceById(workplace_id).getTasks().contains(getTaskById(taskId))) {
-            Task task = getTaskById(taskId);
-            Category category = categoryService.getById(categoryId);
-            if (task.getWorkplace().getCategories().contains(category)) {
-                task.setCategory(null);
-                for (WorkplaceGroup group : category.getWorkplaceGroups()) {
-                    task.getWorkplaceGroups().remove(group);
-                }
-                taskRepository.save(task);
-            }
-        }
+    public void removeCategoryFromTask(Long taskId) {
+        Task task = getTaskById(taskId);
+        task.setCategory(null);
+        taskRepository.save(task);
+    }
+
+    public List<Task> getAllTasksByRecurrence(Long recurrence_id) {
+        return taskRepository.findAllByRecurrenceId(recurrence_id);
     }
 }

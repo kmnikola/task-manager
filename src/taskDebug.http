@@ -1,15 +1,39 @@
 ###
-POST http://localhost:8080/2/tasks
+POST http://localhost:8080/1/tasks
 Content-Type: application/json
 
 {
-  "title": "sampleTask3",
+  "title": "sampleTask2",
   "description": "desc"
 }
 
 ###
-GET http://localhost:8080/2/tasks
+GET http://localhost:8080/1/tasks
 ###
 DELETE http://localhost:8080/1/tasks/1
 ###
 GET http://localhost:8080/1/tasks/2
+
+###
+POST http://localhost:8080/1/tasks/1/recurrence
+Content-Type: application/json
+
+{
+  "days": ["WEDNESDAY"],
+  "time" : "14:53"
+}
+
+###
+GET http://localhost:8080/1/tasks/1/recurrence
+
+###
+POST http://localhost:8080/1/tasks/1/recurrence
+Content-Type: application/json
+
+{
+  "days": ["WEDNESDAY"],
+  "time" : "15:35"
+}
+
+###
+PUT http://localhost:8080/1/tasks/3/toggle-active

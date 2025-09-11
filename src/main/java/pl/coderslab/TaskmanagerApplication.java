@@ -5,6 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import pl.coderslab.role.Role;
@@ -15,6 +16,7 @@ import pl.coderslab.user.UserRepository;
 import java.util.Set;
 
 @SpringBootApplication
+@EnableScheduling
 public class TaskmanagerApplication {
 
     public static void main(String[] args) {
