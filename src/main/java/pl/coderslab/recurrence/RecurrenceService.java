@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.coderslab.task.Task;
 import pl.coderslab.task.TaskService;
+import pl.coderslab.workplace.Workplace;
+import pl.coderslab.workplace.WorkplaceService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,21 +15,25 @@ import java.util.List;
 public class RecurrenceService {
     private final RecurrenceRepository recurrenceRepository;
     private final TaskService taskService;
-    public RecurrenceService(RecurrenceRepository recurrenceRepository, TaskService taskService) {
+    private final WorkplaceService workplaceService;
+    public RecurrenceService(RecurrenceRepository recurrenceRepository, TaskService taskService, WorkplaceService workplaceService) {
         this.recurrenceRepository = recurrenceRepository;
         this.taskService = taskService;
-    }
-
-    public List<Recurrence> getAllRecurrences() {
-        return recurrenceRepository.findAll();
+        this.workplaceService = workplaceService;
     }
 
     public List<Recurrence> getAllRecurrencesByTask(Long taskId) {
         return taskService.getTaskById(taskId).getRecurrences();
     }
 
-    public void addRecurrenceToTask(Recurrence recurrence, Long taskId) {
+    public void createRecurrence(Recurrence recurrence, Long workplaceId) {
         recurrenceRepository.save(recurrence);
+        Workplace workplace = workplaceService.getWorkplaceById(workplaceId);
+        workplace.getRecurrences().add(recurrence);
+        workplaceService.updateWorkplace(workplace);
+    }
+
+    public void addRecurrenceToTask(Recurrence recurrence, Long taskId) {
         taskService.addRecurrenceToTask(taskId, recurrence);
     }
 
@@ -51,7 +57,7 @@ public class RecurrenceService {
     public void activateTasksIfDue() {
         LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
 
-        List<Recurrence> recurrences = getAllRecurrences();
+        List<Recurrence> recurrences = recurrenceRepository.findAll();
 
         for (Recurrence recurrence : recurrences) {
             if (recurrence.matches(now)) {

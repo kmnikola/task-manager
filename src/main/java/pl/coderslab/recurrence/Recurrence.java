@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import pl.coderslab.task.Task;
+import pl.coderslab.workplace.Workplace;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
@@ -25,6 +26,9 @@ public class Recurrence {
     private Long id;
     private Set<DayOfWeek> days;
     private LocalTime time;
+    @ManyToOne
+    @JsonIgnore
+    private Workplace workplace;
 
     public boolean matches(LocalDateTime dateTime) {
         LocalTime nowTime = dateTime.toLocalTime().withSecond(0).withNano(0);

@@ -28,12 +28,4 @@ public class ProfileService {
     public Profile getProfileByWorkplaceIdAndUserId(Long workplaceId, Long userId) {
         return profileRepository.findByWorkplaceIdAndUserId(workplaceId, userId).orElseThrow();
     }
-
-    public Profile createInitialWorkplaceProfile(User user, Workplace workplace, WorkplaceGroup workplaceGroup) {
-        return Profile.builder()
-                .user(user)
-                .workplace(workplace)
-                .workplaceGroup(workplaceGroup)
-                .build();
-    }
 }

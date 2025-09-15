@@ -4,6 +4,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.coderslab.events.WorkplaceCreatedEvent;
+import pl.coderslab.workplace.Workplace;
 import pl.coderslab.workplace.WorkplaceRepository;
 import pl.coderslab.workplace.WorkplaceService;
 
@@ -13,11 +14,11 @@ import java.util.List;
 @Service
 public class WorkplaceGroupService {
     private final WorkplaceGroupRepository workplaceGroupRepository;
-    private final WorkplaceRepository workplaceRepository;
+    private final WorkplaceService workplaceService;
 
-    public WorkplaceGroupService(WorkplaceGroupRepository workplaceGroupRepository, WorkplaceRepository workplaceRepository) {
+    public WorkplaceGroupService(WorkplaceGroupRepository workplaceGroupRepository, WorkplaceService workplaceService) {
         this.workplaceGroupRepository = workplaceGroupRepository;
-        this.workplaceRepository = workplaceRepository;
+        this.workplaceService = workplaceService;
     }
 
     public List<WorkplaceGroup> getWorkplaceGroupsInWorkplace(Long workplaceId) {
@@ -33,7 +34,7 @@ public class WorkplaceGroupService {
     }
 
     public void addWorkplaceGroup(WorkplaceGroup workplaceGroup, Long workplaceId) {
-        workplaceGroup.setWorkplace(workplaceRepository.findById(workplaceId).orElseThrow());
+        workplaceGroup.setWorkplace(workplaceService.getWorkplaceById(workplaceId));
         workplaceGroupRepository.save(workplaceGroup);
     }
 
@@ -45,8 +46,10 @@ public class WorkplaceGroupService {
         workplaceGroupRepository.save(workplaceGroup);
     }
 
-    public void deleteById(Long groupId) {
-        workplaceGroupRepository.deleteById(groupId);
+    public void deleteById(Long workplaceId, Long groupId) {
+        Workplace workplace = workplaceService.getWorkplaceById(workplaceId);
+        workplace.getWorkplaceGroups().remove(getById(groupId));
+        workplaceService.updateWorkplace(workplace);
     }
 
     @EventListener

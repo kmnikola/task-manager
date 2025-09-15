@@ -1,18 +1,20 @@
-###
-
-POST http://localhost:8080/login
-Content-Type: application/x-www-form-urlencoded
-
-username=sampleUser&password=coderslab
 
 ###
+//login owner
 POST http://localhost:8080/login
 Content-Type: application/x-www-form-urlencoded
 
 username=sampleOwner&password=coderslab
 
 ###
+//login user
+POST http://localhost:8080/login
+Content-Type: application/x-www-form-urlencoded
 
+username=sampleUser&password=coderslab
+
+###
+//login another user
 POST http://localhost:8080/login
 Content-Type: application/x-www-form-urlencoded
 

@@ -6,8 +6,9 @@ import pl.coderslab.auth.CurrentUser;
 import pl.coderslab.events.WorkplaceCreatedEvent;
 import pl.coderslab.profile.Profile;
 import pl.coderslab.profile.ProfileService;
+import pl.coderslab.user.UserRepository;
 import pl.coderslab.workplaceGroup.WorkplaceGroup;
-import pl.coderslab.workplaceGroup.WorkplaceGroupService;
+import pl.coderslab.workplaceGroup.WorkplaceGroupRepository;
 import pl.coderslab.user.User;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,15 +17,17 @@ import java.util.List;
 @Service
 public class WorkplaceService {
     private final WorkplaceRepository workplaceRepository;
-    private final WorkplaceGroupService workplaceGroupService;
     private final ApplicationEventPublisher eventPublisher;
     private final ProfileService profileService;
+    private final WorkplaceGroupRepository workplaceGroupRepository;
+    private final UserRepository userRepository;
 
-    public WorkplaceService(WorkplaceRepository workplaceRepository, WorkplaceGroupService workplaceGroupService, ProfileService profileService, ApplicationEventPublisher eventPublisher) {
+    public WorkplaceService(WorkplaceRepository workplaceRepository, ProfileService profileService, ApplicationEventPublisher eventPublisher, WorkplaceGroupRepository workplaceGroupRepository, UserRepository userRepository) {
         this.workplaceRepository = workplaceRepository;
-        this.workplaceGroupService = workplaceGroupService;
         this.profileService = profileService;
         this.eventPublisher = eventPublisher;
+        this.workplaceGroupRepository = workplaceGroupRepository;
+        this.userRepository = userRepository;
     }
 
     public List<Workplace> getAllWorkplaces(CurrentUser currentUser) {
@@ -35,11 +38,6 @@ public class WorkplaceService {
             workplaces.add(workplaceRepository.findByProfileId(profile.getId()).orElse(null));
         }
         return workplaces;
-    }
-
-    public Workplace getWorkplaceById(CurrentUser currentUser, Long id) {
-        User user = currentUser.getUser();
-        return workplaceRepository.findByIdAndUserId(id, user.getId()).orElseThrow();
     }
 
     public Workplace getWorkplaceById(Long workplaceId) {
@@ -63,16 +61,24 @@ public class WorkplaceService {
                 new WorkplaceCreatedEvent(user, groups, workplace.getId())
         );
         //Create a new profile for the user
-        Profile profile = profileService.createInitialWorkplaceProfile(user, workplace, groups.get(0));
+        Profile profile = Profile.builder()
+                .user(user)
+                .workplace(workplace)
+                .workplaceGroup(groups.get(0))
+                .build();
         profileService.save(profile);
     }
 
-    public void updateWorkplace(Workplace workplace) {
-        Workplace workplaceInDB = workplaceRepository.findById(workplace.getId()).orElseThrow();
+    public void editWorkplace(Workplace workplace) {
+        Workplace workplaceInDB = getWorkplaceById(workplace.getId());
         if (workplace.getName() != null) {
             workplaceInDB.setName(workplace.getName());
         }
         workplaceRepository.save(workplaceInDB);
+    }
+
+    public void updateWorkplace(Workplace workplace) {
+        workplaceRepository.save(workplace);
     }
 
     public void deleteWorkplace(Long id) {
@@ -81,12 +87,19 @@ public class WorkplaceService {
 
     public void joinWorkplace(CurrentUser currentUser, Long workplaceId) {
         User user = currentUser.getUser();
-        WorkplaceGroup userGroup = workplaceGroupService.getWorkplaceGroupByWorkplaceIdAndName(workplaceId, "user");
+        WorkplaceGroup userGroup = workplaceGroupRepository.findWorkplaceGroupByWorkplaceIdAndName(workplaceId, "user").orElseThrow();
         Workplace workplace = getWorkplaceById(workplaceId);
         profileService.save(Profile.builder()
                 .user(user)
                 .workplace(workplace)
                 .workplaceGroup(userGroup)
                 .build());
+    }
+
+    public void leaveWorkplace(CurrentUser currentUser, Long workplaceId) {
+        User user = currentUser.getUser();
+        Profile profile = profileService.getProfileByWorkplaceIdAndUserId(workplaceId, user.getId());
+        user.getProfiles().remove(profile);
+        userRepository.save(user);
     }
 }

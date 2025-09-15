@@ -24,7 +24,7 @@ public class Category {
     private Long id;
     private String name;
     @JsonIgnore
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "category")
     private List<Task> tasks;
     @JsonIgnore
     @ManyToOne

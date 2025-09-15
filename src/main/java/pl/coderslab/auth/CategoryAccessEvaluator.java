@@ -8,17 +8,15 @@ import pl.coderslab.workplace.WorkplaceService;
 @Component("categoryAccess")
 public class CategoryAccessEvaluator {
     private final CategoryService categoryService;
-    private final WorkplaceService workplaceService;
-    public CategoryAccessEvaluator(CategoryService categoryService, WorkplaceService workplaceService) {
+    public CategoryAccessEvaluator(CategoryService categoryService) {
         this.categoryService = categoryService;
-        this.workplaceService = workplaceService;
     }
 
     public boolean categoryBelongsToWorkplace(Long categoryId, Long workplaceId) {
-        return workplaceService.getWorkplaceById(workplaceId).getCategories().contains(categoryService.getById(categoryId));
+        return categoryService.getById(categoryId).getWorkplace().getId().equals(workplaceId);
     }
 
     public boolean categoryBelongsToWorkplace(Category category, Long workplaceId) {
-        return workplaceService.getWorkplaceById(workplaceId).getCategories().contains(category);
+        return category.getWorkplace().getId().equals(workplaceId);
     }
 }

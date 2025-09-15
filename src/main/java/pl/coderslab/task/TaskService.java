@@ -1,9 +1,10 @@
 package pl.coderslab.task;
 
 import org.springframework.stereotype.Service;
-import pl.coderslab.category.Category;
 import pl.coderslab.category.CategoryService;
 import pl.coderslab.recurrence.Recurrence;
+import pl.coderslab.workplace.Workplace;
+import pl.coderslab.workplace.WorkplaceRepository;
 import pl.coderslab.workplace.WorkplaceService;
 import pl.coderslab.workplaceGroup.WorkplaceGroup;
 import pl.coderslab.workplaceGroup.WorkplaceGroupService;
@@ -14,12 +15,14 @@ import java.util.List;
 public class TaskService {
     private final TaskRepository taskRepository;
     private final WorkplaceService workplaceService;
+    private final WorkplaceRepository workplaceRepository;
     private final WorkplaceGroupService workplaceGroupService;
     private final CategoryService categoryService;
 
-    public TaskService(TaskRepository taskRepository, WorkplaceService workplaceService, WorkplaceGroupService workplaceGroupService, CategoryService categoryService) {
+    public TaskService(TaskRepository taskRepository, WorkplaceService workplaceService, WorkplaceRepository workplaceRepository, WorkplaceGroupService workplaceGroupService, CategoryService categoryService) {
         this.workplaceService = workplaceService;
         this.taskRepository = taskRepository;
+        this.workplaceRepository = workplaceRepository;
         this.workplaceGroupService = workplaceGroupService;
         this.categoryService = categoryService;
     }
@@ -49,8 +52,10 @@ public class TaskService {
         taskRepository.save(task);
     }
 
-    public void deleteById(Long taskId) {
-        taskRepository.deleteById(taskId);
+    public void deleteById(Long workplaceId, Long taskId) {
+        Workplace workplace = workplaceService.getWorkplaceById(workplaceId);
+        workplace.getTasks().remove(getTaskById(taskId));
+        workplaceRepository.save(workplace);
     }
 
     public void updateTask(Task task) {

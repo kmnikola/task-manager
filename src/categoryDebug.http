@@ -1,0 +1,11 @@
+###
+POST http://localhost:8080/1/categories
+Content-Type: application/json
+
+{
+  "name": "category"
+}
+###
+GET http://localhost:8080/1/categories
+###
+DELETE http://localhost:8080/1/categories/1

@@ -22,6 +22,7 @@ public class RecurrenceController {
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id)")
     @PostMapping("")
     public void createRecurrence(@PathVariable("workplace_id") Long workplace_id, @PathVariable("task_id") Long task_id, @RequestBody Recurrence recurrence) {
+        recurrenceService.createRecurrence(recurrence, workplace_id);
         recurrenceService.addRecurrenceToTask(recurrence, task_id);
     }
 

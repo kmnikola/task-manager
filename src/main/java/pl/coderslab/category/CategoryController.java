@@ -28,13 +28,13 @@ public class CategoryController {
         categoryService.addCategory(category, workplace_id);
     }
 
-    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@categoryAccess.categoryBelongsToWorkplace(category_id, workplace_id)")
-    @DeleteMapping("")
-    public void deleteCategory(@PathVariable("workplace_id") Long workplace_id, @RequestBody Long category_id) {
-        categoryService.deleteById(category_id);
+    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@categoryAccess.categoryBelongsToWorkplace(#category_id, #workplace_id)")
+    @DeleteMapping("/{category_id}")
+    public void deleteCategory(@PathVariable("workplace_id") Long workplace_id, @PathVariable("category_id") Long category_id) {
+        categoryService.deleteById(workplace_id, category_id);
     }
 
-    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@categoryAccess.categoryBelongsToWorkplace(category, workplace_id)")
+    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@categoryAccess.categoryBelongsToWorkplace(#category, #workplace_id)")
     @PutMapping("")
     public void editCategory(@PathVariable("workplace_id") Long workplace_id, @RequestBody Category category) {
         categoryService.updateCategory(category);

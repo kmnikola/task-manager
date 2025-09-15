@@ -33,7 +33,7 @@ public class TaskController {
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id)")
     @DeleteMapping("/{task_id}")
     public void deleteTask(@PathVariable("workplace_id") Long workplace_id, @PathVariable("task_id") Long task_id) {
-        taskService.deleteById(task_id);
+        taskService.deleteById(workplace_id, task_id);
     }
 
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task, #workplace_id)")
@@ -48,19 +48,19 @@ public class TaskController {
         taskService.toggleActive(task_id);
     }
 
-    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id) && " + "@groupAccess.groupBelongsToWorkplace(group_id, workplace_id)")
+    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id) && " + "@groupAccess.groupBelongsToWorkplace(#group_id, #workplace_id)")
     @PutMapping("/{task_id}/add_group/{group_id}")
     public void addGroupToTask(@PathVariable("workplace_id") Long workplace_id, @PathVariable("task_id") Long task_id, @PathVariable("group_id") Long group_id) {
         taskService.addGroupToTask(group_id, task_id);
     }
 
-    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id) && " + "@groupAccess.groupBelongsToWorkplace(group_id, workplace_id)")
+    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id) && " + "@groupAccess.groupBelongsToWorkplace(#group_id, #workplace_id)")
     @DeleteMapping("/{task_id}/remove_group/{group_id}")
     public void removeGroupFromTask(@PathVariable("workplace_id") Long workplace_id, @PathVariable("task_id") Long task_id, @PathVariable("group_id") Long group_id) {
         taskService.removeGroupFromTask(group_id, task_id);
     }
 
-    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id) && " + "@categoryAccess.categoryBelongsToWorkplace(category_id, workplace_id)")
+    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id) && " + "@categoryAccess.categoryBelongsToWorkplace(#category_id, #workplace_id)")
     @PutMapping("/{task_id}/set_category/{category_id}")
     public void addCategoryToTask(@PathVariable("workplace_id") Long workplace_id, @PathVariable("task_id") Long task_id, @PathVariable("category_id") Long category_id) {
         taskService.setCategoryToTask(category_id, task_id);

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import pl.coderslab.category.Category;
 import pl.coderslab.profile.Profile;
+import pl.coderslab.recurrence.Recurrence;
 import pl.coderslab.workplaceGroup.WorkplaceGroup;
 import pl.coderslab.task.Task;
 
@@ -21,12 +22,14 @@ public class Workplace {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Profile> profiles = new ArrayList<>();
-    @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> tasks = new ArrayList<>();
-    @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> categories = new ArrayList<>();
-    @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkplaceGroup> workplaceGroups = new ArrayList<>();
+    @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Recurrence> recurrences = new ArrayList<>();
 }

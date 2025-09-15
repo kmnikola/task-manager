@@ -21,7 +21,7 @@ public class WorkplaceAccessEvaluator {
 
     public boolean canAccessWorkplace(Authentication auth, Long workplaceId) {
         CurrentUser currentUser = (CurrentUser) auth.getPrincipal();
-        return workplaceService.getAllWorkplaces(currentUser).contains(workplaceService.getWorkplaceById(currentUser, workplaceId));
+        return workplaceService.getAllWorkplaces(currentUser).contains(workplaceService.getWorkplaceById(workplaceId));
     }
 
     public boolean belongsToGroup(Authentication auth, Long workplaceId, Long workplaceGroupId) {

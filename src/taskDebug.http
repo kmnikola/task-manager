@@ -1,4 +1,5 @@
 ###
+//create task in workplace 1
 POST http://localhost:8080/1/tasks
 Content-Type: application/json
 
@@ -8,32 +9,30 @@ Content-Type: application/json
 }
 
 ###
+// get tasks in workplace 1
 GET http://localhost:8080/1/tasks
 ###
-DELETE http://localhost:8080/1/tasks/1
+// delete task in workplace 1 with task id 3
+DELETE http://localhost:8080/1/tasks/2
 ###
+// get task with id 2 from workplace 1
 GET http://localhost:8080/1/tasks/2
-
 ###
-POST http://localhost:8080/1/tasks/1/recurrence
+// get recurrence of task 1 in workplace 1
+GET http://localhost:8080/1/tasks/2/recurrence
+###
+// add recurrence to task 1 in workplace 1
+POST http://localhost:8080/1/tasks/2/recurrence
 Content-Type: application/json
 
 {
-  "days": ["WEDNESDAY"],
-  "time" : "14:53"
+  "days": ["THURSDAY"],
+  "time" : "15:32"
 }
-
 ###
-GET http://localhost:8080/1/tasks/1/recurrence
-
+PUT http://localhost:8080/1/tasks/2/toggle-active
 ###
-POST http://localhost:8080/1/tasks/1/recurrence
-Content-Type: application/json
-
-{
-  "days": ["WEDNESDAY"],
-  "time" : "15:35"
-}
-
+PUT http://localhost:8080/1/tasks/2/set_category/2
 ###
-PUT http://localhost:8080/1/tasks/3/toggle-active
+// add group to task
+PUT http://localhost:8080/1/tasks/2/add_group/4

@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import pl.coderslab.task.TaskRepository;
 import pl.coderslab.task.TaskService;
 import pl.coderslab.workplace.Workplace;
+import pl.coderslab.workplace.WorkplaceRepository;
 import pl.coderslab.workplace.WorkplaceService;
 import pl.coderslab.workplaceGroup.WorkplaceGroup;
 import pl.coderslab.workplaceGroup.WorkplaceGroupService;
@@ -34,8 +35,10 @@ public class CategoryService {
         categoryRepository.save(category);
     }
 
-    public void deleteById(Long categoryId) {
-        categoryRepository.deleteById(categoryId);
+    public void deleteById(Long workplaceId, Long categoryId) {
+        Workplace workplace = workplaceService.getWorkplaceById(workplaceId);
+        workplace.getCategories().remove(getById(categoryId));
+        workplaceService.updateWorkplace(workplace);
     }
 
     public void updateCategory(Category category) {
