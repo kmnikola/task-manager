@@ -3,13 +3,14 @@ package pl.coderslab.workplace;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import pl.coderslab.auth.CurrentUser;
-import pl.coderslab.events.WorkplaceCreatedEvent;
 import pl.coderslab.profile.Profile;
 import pl.coderslab.profile.ProfileService;
 import pl.coderslab.user.UserRepository;
 import pl.coderslab.workplaceGroup.WorkplaceGroup;
 import pl.coderslab.workplaceGroup.WorkplaceGroupRepository;
 import pl.coderslab.user.User;
+import pl.coderslab.workplaceGroup.WorkplaceGroupService;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -19,20 +20,20 @@ public class WorkplaceService {
     private final WorkplaceRepository workplaceRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final ProfileService profileService;
-    private final WorkplaceGroupRepository workplaceGroupRepository;
+    private final WorkplaceGroupService workplaceGroupService;
     private final UserRepository userRepository;
 
-    public WorkplaceService(WorkplaceRepository workplaceRepository, ProfileService profileService, ApplicationEventPublisher eventPublisher, WorkplaceGroupRepository workplaceGroupRepository, UserRepository userRepository) {
+    public WorkplaceService(WorkplaceRepository workplaceRepository, ProfileService profileService, ApplicationEventPublisher eventPublisher, WorkplaceGroupService workplaceGroupService, UserRepository userRepository) {
         this.workplaceRepository = workplaceRepository;
         this.profileService = profileService;
         this.eventPublisher = eventPublisher;
-        this.workplaceGroupRepository = workplaceGroupRepository;
+        this.workplaceGroupService = workplaceGroupService;
         this.userRepository = userRepository;
     }
 
     public List<Workplace> getAllWorkplaces(CurrentUser currentUser) {
         User user = currentUser.getUser();
-        List<Profile> profiles = profileService.getAllProfiles(user);
+        List<Profile> profiles = profileService.getAllProfilesByUser(user);
         List<Workplace> workplaces = new ArrayList<>();
         for (Profile profile : profiles) {
             workplaces.add(workplaceRepository.findByProfileId(profile.getId()).orElse(null));
@@ -51,16 +52,16 @@ public class WorkplaceService {
         List<WorkplaceGroup> groups = Arrays.asList(
                 WorkplaceGroup.builder()
                         .name("owner")
+                        .canEdit(true)
                         .build(),
                 WorkplaceGroup.builder()
                         .name("user")
                         .build()
         );
-
-        eventPublisher.publishEvent(
-                new WorkplaceCreatedEvent(user, groups, workplace.getId())
-        );
-        //Create a new profile for the user
+        for (WorkplaceGroup group : groups) {
+            workplaceGroupService.addWorkplaceGroup(group, workplace.getId());
+        }
+        //Create a new profile for the owner
         Profile profile = Profile.builder()
                 .user(user)
                 .workplace(workplace)
@@ -87,7 +88,7 @@ public class WorkplaceService {
 
     public void joinWorkplace(CurrentUser currentUser, Long workplaceId) {
         User user = currentUser.getUser();
-        WorkplaceGroup userGroup = workplaceGroupRepository.findWorkplaceGroupByWorkplaceIdAndName(workplaceId, "user").orElseThrow();
+        WorkplaceGroup userGroup = workplaceGroupService.getWorkplaceGroupByWorkplaceIdAndName(workplaceId, "user");
         Workplace workplace = getWorkplaceById(workplaceId);
         profileService.save(Profile.builder()
                 .user(user)
@@ -99,7 +100,6 @@ public class WorkplaceService {
     public void leaveWorkplace(CurrentUser currentUser, Long workplaceId) {
         User user = currentUser.getUser();
         Profile profile = profileService.getProfileByWorkplaceIdAndUserId(workplaceId, user.getId());
-        user.getProfiles().remove(profile);
-        userRepository.save(user);
+        profileService.deleteProfile(profile.getId());
     }
 }

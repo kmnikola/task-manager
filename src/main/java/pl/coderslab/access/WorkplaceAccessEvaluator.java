@@ -1,7 +1,8 @@
-package pl.coderslab.auth;
+package pl.coderslab.access;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import pl.coderslab.auth.CurrentUser;
 import pl.coderslab.profile.Profile;
 import pl.coderslab.profile.ProfileService;
 import pl.coderslab.workplace.WorkplaceService;
@@ -37,7 +38,7 @@ public class WorkplaceAccessEvaluator {
         CurrentUser currentUser = (CurrentUser) auth.getPrincipal();
         if (canAccessWorkplace(auth, workplaceId)) {
             Profile profile = profileService.getProfileByWorkplaceIdAndUserId(workplaceId, currentUser.getUser().getId());
-            return profile.getWorkplaceGroup() == workplaceGroupService.getWorkplaceGroupByWorkplaceIdAndName(workplaceId, "owner");
+            return profile.getWorkplaceGroup().isCanEdit();
         }
         return false;
     }

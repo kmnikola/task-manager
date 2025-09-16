@@ -70,4 +70,12 @@ public class RecurrenceService {
             }
         }
     }
+
+    public void copyRecurrences(Long copiedTaskId, Long taskId) {
+        taskService.getTaskById(copiedTaskId).getRecurrences().forEach(recurrence -> {
+            if (!taskService.getTaskById(taskId).getRecurrences().contains(recurrence)) {
+                taskService.addRecurrenceToTask(taskId, recurrence);
+            }
+        });
+    }
 }

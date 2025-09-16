@@ -22,14 +22,19 @@ public class Workplace {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    @JsonIgnore
     @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Profile> profiles = new ArrayList<>();
+    @JsonIgnore
     @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> tasks = new ArrayList<>();
+    @JsonIgnore
     @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> categories = new ArrayList<>();
+    @JsonIgnore
     @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkplaceGroup> workplaceGroups = new ArrayList<>();
+    @JsonIgnore
     @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Recurrence> recurrences = new ArrayList<>();
 }

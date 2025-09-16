@@ -15,4 +15,7 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 
     @Query("select p from Profile p where p.workplace.id = :workplaceId and p.user.id = :userId")
     Optional<Profile> findByWorkplaceIdAndUserId(Long workplaceId, Long userId);
+
+    @Query("select p from Profile p where p.workplace.id = :workplaceId")
+    List<Profile> findAllByWorkplaceId(Long workplaceId);
 }

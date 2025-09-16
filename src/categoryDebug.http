@@ -8,4 +8,4 @@ Content-Type: application/json
 ###
 GET http://localhost:8080/1/categories
 ###
-DELETE http://localhost:8080/1/categories/1
+DELETE http://localhost:8080/1/categories/2

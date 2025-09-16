@@ -29,10 +29,10 @@ public class WorkplaceGroupController {
         workplaceGroupService.addWorkplaceGroup(workplaceGroup, workplace_id);
     }
 
-    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@groupAccess.groupBelongsToWorkplace(#workplaceGroup, #workplace_id)")
+    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@groupAccess.groupBelongsToWorkplace(#workplaceGroup.getId(), #workplace_id)")
     @PutMapping("")
     public void editWorkplaceGroup(@RequestBody WorkplaceGroup workplaceGroup, @PathVariable("workplace_id") Long workplace_id) {
-        workplaceGroupService.update(workplaceGroup);
+        workplaceGroupService.update(workplaceGroup, workplace_id);
     }
 
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@groupAccess.groupBelongsToWorkplace(#group_id, #workplace_id)")

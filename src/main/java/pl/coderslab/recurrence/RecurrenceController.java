@@ -27,6 +27,12 @@ public class RecurrenceController {
     }
 
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id)")
+    @PostMapping("/copy/{copied_task_id}")
+    public void copyRecurrences(@PathVariable("workplace_id") Long workplace_id, @PathVariable("task_id") Long task_id, @PathVariable("copied_task_id") Long copied_task_id) {
+        recurrenceService.copyRecurrences(copied_task_id, task_id);
+    }
+
+    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id)")
     @PutMapping("")
     public void editRecurrence(@PathVariable("workplace_id") Long workplace_id, @PathVariable("task_id") Long task_id, @RequestBody Recurrence recurrence) {
         recurrenceService.editRecurrence(recurrence);

@@ -1,7 +1,10 @@
 package pl.coderslab.task;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import pl.coderslab.auth.CurrentUser;
+
 import java.util.List;
 
 @RestController
@@ -14,14 +17,14 @@ public class TaskController {
 
     @PreAuthorize("@workplaceAccess.canAccessWorkplace(authentication, #workplace_id)")
     @GetMapping("")
-    public List<Task> getTasks(@PathVariable("workplace_id") Long workplace_id) {
-        return taskService.getAllTasksByWorkplaceId(workplace_id);
+    public List<Task> getTasks(@AuthenticationPrincipal CurrentUser currentUser, @PathVariable("workplace_id") Long workplace_id) {
+        return taskService.getAllTasksByWorkplaceIdAndUser(workplace_id, currentUser);
     }
 
-    @PreAuthorize("@workplaceAccess.belongsToGroup(authentication, #workplace_id, #group_id)")
-    @GetMapping("/{group_id}")
-    public List<Task> getTasksByGroup(@PathVariable("workplace_id") Long workplace_id, @PathVariable("group_id") Long group_id) {
-        return taskService.getAllTasksByWorkplaceIdAndWorkplaceGroupId(workplace_id, group_id);
+    @PreAuthorize("@workplaceAccess.canAccessWorkplace(authentication, #workplace_id)")
+    @GetMapping("/all")
+    public List<Task> getAllTasks(@PathVariable("workplace_id") Long workplace_id) {
+        return taskService.getAllTasksByWorkplaceId(workplace_id);
     }
 
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id)")

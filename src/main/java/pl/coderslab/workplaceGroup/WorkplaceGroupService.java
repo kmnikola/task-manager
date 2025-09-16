@@ -3,7 +3,6 @@ package pl.coderslab.workplaceGroup;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pl.coderslab.events.WorkplaceCreatedEvent;
 import pl.coderslab.workplace.Workplace;
 import pl.coderslab.workplace.WorkplaceRepository;
 import pl.coderslab.workplace.WorkplaceService;
@@ -14,11 +13,15 @@ import java.util.List;
 @Service
 public class WorkplaceGroupService {
     private final WorkplaceGroupRepository workplaceGroupRepository;
-    private final WorkplaceService workplaceService;
+    private final WorkplaceRepository workplaceRepository;
 
-    public WorkplaceGroupService(WorkplaceGroupRepository workplaceGroupRepository, WorkplaceService workplaceService) {
+    public WorkplaceGroupService(WorkplaceGroupRepository workplaceGroupRepository, WorkplaceRepository workplaceRepository) {
         this.workplaceGroupRepository = workplaceGroupRepository;
-        this.workplaceService = workplaceService;
+        this.workplaceRepository = workplaceRepository;
+    }
+
+    public Workplace getWorkplaceById(Long workplaceId) {
+        return workplaceRepository.findById(workplaceId).orElseThrow();
     }
 
     public List<WorkplaceGroup> getWorkplaceGroupsInWorkplace(Long workplaceId) {
@@ -34,29 +37,38 @@ public class WorkplaceGroupService {
     }
 
     public void addWorkplaceGroup(WorkplaceGroup workplaceGroup, Long workplaceId) {
-        workplaceGroup.setWorkplace(workplaceService.getWorkplaceById(workplaceId));
-        workplaceGroupRepository.save(workplaceGroup);
+        if (checkNameExists(workplaceGroup, workplaceId)) {
+            workplaceGroup.setWorkplace(getWorkplaceById(workplaceId));
+            workplaceGroupRepository.save(workplaceGroup);
+        }
     }
 
-    public void update(WorkplaceGroup workplaceGroup) {
+    public void update(WorkplaceGroup workplaceGroup, Long workplaceId) {
         WorkplaceGroup groupInDB = getById(workplaceGroup.getId());
-        if (workplaceGroup.getName() != null) {
-            groupInDB.setName(workplaceGroup.getName());
+        if (checkNameExists(workplaceGroup, workplaceId) && !groupInDB.getName().equals("owner") && !groupInDB.getName().equals("user")) {
+            if (workplaceGroup.getName() != null) {
+                groupInDB.setName(workplaceGroup.getName());
+            }
+            workplaceGroupRepository.save(groupInDB);
         }
-        workplaceGroupRepository.save(workplaceGroup);
+    }
+
+    private boolean checkNameExists(WorkplaceGroup workplaceGroup, Long workplaceId) {
+        List<WorkplaceGroup> groups = getWorkplaceById(workplaceId).getWorkplaceGroups();
+        for (WorkplaceGroup group : groups) {
+            if (group.getName().equals(workplaceGroup.getName())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void deleteById(Long workplaceId, Long groupId) {
-        Workplace workplace = workplaceService.getWorkplaceById(workplaceId);
-        workplace.getWorkplaceGroups().remove(getById(groupId));
-        workplaceService.updateWorkplace(workplace);
-    }
-
-    @EventListener
-    @Transactional
-    public void handleWorkplaceCreatedEvent(WorkplaceCreatedEvent event) {
-        for (WorkplaceGroup group : event.groups()) {
-            addWorkplaceGroup(group, event.workplaceId());
+        WorkplaceGroup groupInDB = getById(groupId);
+        if (!groupInDB.getName().equals("owner") && !groupInDB.getName().equals("user")) {
+            Workplace workplace = getWorkplaceById(workplaceId);
+            workplace.getWorkplaceGroups().remove(groupInDB);
+            workplaceRepository.save(workplace);
         }
     }
 }

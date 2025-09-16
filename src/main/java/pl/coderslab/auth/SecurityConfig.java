@@ -3,7 +3,6 @@ package pl.coderslab.auth;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -24,14 +23,10 @@ public class SecurityConfig {
 
                 // Configure authorization
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/create-user").permitAll()
-                        .requestMatchers("/create-owner").permitAll()
+                        .requestMatchers("/register").permitAll()
                         .requestMatchers("/**").hasRole("USER")
                 )
-
-                // Enable both form login (for web interface) and HTTP Basic (for API testing)
                 .formLogin(Customizer.withDefaults())
-                //.httpBasic(Customizer.withDefaults())
 
                 // Configure session management
                 .sessionManagement(session ->

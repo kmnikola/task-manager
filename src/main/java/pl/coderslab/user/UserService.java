@@ -36,14 +36,17 @@ public class UserService {
         });
     }
 
-    public void update(User user) {
-        User userInDB = userRepository.findByUsername(user.getUsername()).orElseThrow(() -> new UsernameNotFoundException(user.getUsername()));
-        if (user.getEmail() != null) {
-            userInDB.setEmail(user.getEmail());
+    public void update(User user, User userData) {
+        if (userData.getEmail() != null) {
+            user.setEmail(userData.getEmail());
         }
-        if (user.getPassword() != null) {
-            userInDB.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (userData.getPassword() != null) {
+            user.setPassword(passwordEncoder.encode(userData.getPassword()));
         }
-        userRepository.save(userInDB);
+        userRepository.save(user);
+    }
+
+    public void delete(User user) {
+        userRepository.delete(user);
     }
 }

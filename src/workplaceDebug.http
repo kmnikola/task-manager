@@ -17,7 +17,7 @@ GET http://localhost:8080/workplaces/1
 
 ###
 //join workplace
-PUT http://localhost:8080/workplaces/join/3
+PUT http://localhost:8080/workplaces/join/1
 ###
 //edit workplace
 PUT http://localhost:8080/workplaces
@@ -30,3 +30,7 @@ Content-Type: application/json
 ###
 //delete workplace
 DELETE http://localhost:8080/workplaces/1
+
+###
+//quit workplace
+PUT http://localhost:8080/workplaces/leave/1

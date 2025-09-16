@@ -1,10 +1,12 @@
 package pl.coderslab.auth;
 
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import pl.coderslab.user.User;
 
 import java.util.Collection;
 
+@Getter
 public class CurrentUser extends org.springframework.security.core.userdetails.User {
     private final User user;
     public CurrentUser(String username, String password,
@@ -13,5 +15,4 @@ public class CurrentUser extends org.springframework.security.core.userdetails.U
         super(username, password, authorities);
         this.user = user;
     }
-    public User getUser() {return user;}
 }

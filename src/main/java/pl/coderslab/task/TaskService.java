@@ -1,8 +1,13 @@
 package pl.coderslab.task;
 
+import org.hibernate.jdbc.Work;
 import org.springframework.stereotype.Service;
+import pl.coderslab.auth.CurrentUser;
 import pl.coderslab.category.CategoryService;
+import pl.coderslab.profile.Profile;
+import pl.coderslab.profile.ProfileService;
 import pl.coderslab.recurrence.Recurrence;
+import pl.coderslab.user.User;
 import pl.coderslab.workplace.Workplace;
 import pl.coderslab.workplace.WorkplaceRepository;
 import pl.coderslab.workplace.WorkplaceService;
@@ -18,25 +23,28 @@ public class TaskService {
     private final WorkplaceRepository workplaceRepository;
     private final WorkplaceGroupService workplaceGroupService;
     private final CategoryService categoryService;
+    private final ProfileService profileService;
 
-    public TaskService(TaskRepository taskRepository, WorkplaceService workplaceService, WorkplaceRepository workplaceRepository, WorkplaceGroupService workplaceGroupService, CategoryService categoryService) {
+    public TaskService(TaskRepository taskRepository, WorkplaceService workplaceService, WorkplaceRepository workplaceRepository, WorkplaceGroupService workplaceGroupService, CategoryService categoryService, ProfileService profileService) {
         this.workplaceService = workplaceService;
         this.taskRepository = taskRepository;
         this.workplaceRepository = workplaceRepository;
         this.workplaceGroupService = workplaceGroupService;
         this.categoryService = categoryService;
+        this.profileService = profileService;
     }
 
     public Task getTaskById(Long id) {
         return taskRepository.findById(id).orElseThrow();
     }
 
-    public List<Task> getAllTasksByWorkplaceId(Long workplaceId) {
-        return taskRepository.findAllByWorkplaceId(workplaceId);
+    public List<Task> getAllTasksByWorkplaceIdAndUser(Long workplaceId, CurrentUser currentUser) {
+        Profile profile = profileService.getProfileByWorkplaceIdAndUserId(workplaceId, currentUser.getUser().getId());
+        return taskRepository.findAllByWorkplaceIdAndWorkplaceGroupId(workplaceId, profile.getWorkplaceGroup().getId());
     }
 
-    public List<Task> getAllTasksByWorkplaceIdAndWorkplaceGroupId(Long workplaceId, Long workplaceGroupId) {
-        return taskRepository.findAllByWorkplaceIdAndWorkplaceGroupId(workplaceId, workplaceGroupId);
+    public List<Task> getAllTasksByWorkplaceId(Long workplaceId) {
+        return taskRepository.findAllByWorkplaceId(workplaceId);
     }
 
     public List<Task> getAllTasksByCategoryId(Long workplaceId, Long categoryId) {
@@ -90,7 +98,10 @@ public class TaskService {
 
     public void addGroupToTask(Long groupId, Long taskId) {
         Task task = getTaskById(taskId);
-        task.getWorkplaceGroups().add(workplaceGroupService.getById(groupId));
+        WorkplaceGroup group = workplaceGroupService.getById(groupId);
+        if (!task.getWorkplaceGroups().contains(group)) {
+            task.getWorkplaceGroups().add(group);
+        }
         taskRepository.save(task);
     }
 

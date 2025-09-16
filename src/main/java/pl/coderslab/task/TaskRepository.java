@@ -12,7 +12,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     List<Task> findAllByWorkplaceId(Long workplaceId);
 
-    @Query("select t from Task t join t.workplaceGroups g where t.workplace.id = :workplaceId and g.id = :groupId group by t.active")
+    @Query("select t from Task t join t.workplaceGroups g where t.workplace.id = :workplaceId and g.id = :groupId")
     List<Task> findAllByWorkplaceIdAndWorkplaceGroupId(Long workplaceId, Long groupId);
 
     @Query("select t from Task t where t.workplace.id = :workplaceId and t.category.id = :categoryId")

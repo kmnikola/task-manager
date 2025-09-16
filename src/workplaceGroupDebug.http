@@ -1,6 +1,6 @@
 ###
 
-GET http://localhost:8080/2/groups
+GET http://localhost:8080/1/groups
 
 ###
 POST http://localhost:8080/1/groups
@@ -12,10 +12,11 @@ Content-Type: application/json
 
 ###
 
-PUT http://localhost:8080/2/groups
+PUT http://localhost:8080/1/groups
 Content-Type: application/json
 
 {
+  "id" : 2,
   "name" : "cook"
 }
 

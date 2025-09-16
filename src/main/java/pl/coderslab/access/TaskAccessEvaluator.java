@@ -1,4 +1,4 @@
-package pl.coderslab.auth;
+package pl.coderslab.access;
 
 import org.springframework.stereotype.Component;
 import pl.coderslab.task.Task;
