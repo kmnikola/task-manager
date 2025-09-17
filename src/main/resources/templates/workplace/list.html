@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <title>Workplaces</title>
+</head>
+<body>
+<div th:replace="navbar :: navbar"></div>
+
+<h1>Workplaces</h1>
+<form th:action="@{/workplaces/join}" method="post" style="margin-bottom: 20px;">
+  <input type="text" name="workplace_id" placeholder="Enter Workplace ID" required>
+  <button type="submit">Join Workplace</button>
+</form>
+<a th:href="@{/workplaces/create}">Create New Workplace</a>
+
+<ul>
+  <li th:each="workplace : ${workplaces}">
+    <!-- Workplace name -->
+    <span th:text="${workplace.name}">Workplace Name</span>
+
+    <!-- Tasks link -->
+    <a th:href="@{'/workplaces/' + ${workplace.id} + '/tasks'}">Tasks</a>
+
+    <!-- EDIT + REMOVE buttons if user can edit -->
+    <span th:if="${@workplaceAccess.canEditWorkplace(#authentication, workplace.id)}">
+      | <a th:href="@{'/workplaces/' + ${workplace.id} + '/edit'}">Edit</a>
+      <form th:action="@{'/workplaces/delete/' + ${workplace.id}}" method="post" style="display:inline;">
+        <button type="submit" onclick="return confirm('Are you sure you want to remove this workplace?');">
+          Remove
+        </button>
+      </form>
+    </span>
+
+    <!-- LEAVE button if user cannot edit but can access -->
+    <span th:if="${!@workplaceAccess.canEditWorkplace(#authentication, workplace.id)
+                 and @workplaceAccess.canAccessWorkplace(#authentication, workplace.id)}">
+      <form th:action="@{'/workplaces/leave/' + ${workplace.id}}" method="post" style="display:inline;">
+        <button type="submit" onclick="return confirm('Are you sure you want to leave this workplace?');">
+          Leave
+        </button>
+      </form>
+    </span>
+  </li>
+</ul>
+
+</body>
+</html>

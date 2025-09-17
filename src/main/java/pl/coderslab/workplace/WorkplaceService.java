@@ -1,5 +1,6 @@
 package pl.coderslab.workplace;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import pl.coderslab.auth.CurrentUser;
@@ -18,15 +19,13 @@ import java.util.List;
 @Service
 public class WorkplaceService {
     private final WorkplaceRepository workplaceRepository;
-    private final ApplicationEventPublisher eventPublisher;
     private final ProfileService profileService;
     private final WorkplaceGroupService workplaceGroupService;
     private final UserRepository userRepository;
 
-    public WorkplaceService(WorkplaceRepository workplaceRepository, ProfileService profileService, ApplicationEventPublisher eventPublisher, WorkplaceGroupService workplaceGroupService, UserRepository userRepository) {
+    public WorkplaceService(WorkplaceRepository workplaceRepository, ProfileService profileService, WorkplaceGroupService workplaceGroupService, UserRepository userRepository) {
         this.workplaceRepository = workplaceRepository;
         this.profileService = profileService;
-        this.eventPublisher = eventPublisher;
         this.workplaceGroupService = workplaceGroupService;
         this.userRepository = userRepository;
     }
@@ -38,36 +37,27 @@ public class WorkplaceService {
         for (Profile profile : profiles) {
             workplaces.add(workplaceRepository.findByProfileId(profile.getId()).orElse(null));
         }
+        List<Workplace> workplacesOfUser = workplaceRepository.getWorkplacesByUserId(user.getId());
+        for (Workplace workplace : workplacesOfUser) {
+            workplaces.add(workplace);
+        }
         return workplaces;
     }
 
     public Workplace getWorkplaceById(Long workplaceId) {
-        return workplaceRepository.findById(workplaceId).orElseThrow();
+        return workplaceRepository.findById(workplaceId).orElseThrow(() -> new EntityNotFoundException("Workplace with id " + workplaceId + " not found"));
     }
 
     public void createWorkplace(CurrentUser currentUser, Workplace workplace) {
+        User user = userRepository.getUserById(currentUser.getUser().getId());
+        workplace.setUser(user);
         workplaceRepository.save(workplace);
-        User user = currentUser.getUser();
-        //Create initial roles
-        List<WorkplaceGroup> groups = Arrays.asList(
-                WorkplaceGroup.builder()
-                        .name("owner")
-                        .canEdit(true)
-                        .build(),
-                WorkplaceGroup.builder()
-                        .name("user")
-                        .build()
-        );
-        for (WorkplaceGroup group : groups) {
-            workplaceGroupService.addWorkplaceGroup(group, workplace.getId());
-        }
-        //Create a new profile for the owner
-        Profile profile = Profile.builder()
-                .user(user)
-                .workplace(workplace)
-                .workplaceGroup(groups.get(0))
-                .build();
-        profileService.save(profile);
+        user.getWorkplaces().add(workplace);
+        userRepository.save(user);
+
+        workplaceGroupService.addWorkplaceGroup(WorkplaceGroup.builder()
+                    .name("user")
+                    .build(), workplace.getId());
     }
 
     public void editWorkplace(Workplace workplace) {
@@ -82,8 +72,12 @@ public class WorkplaceService {
         workplaceRepository.save(workplace);
     }
 
-    public void deleteWorkplace(Long id) {
-        workplaceRepository.deleteById(id);
+    public void deleteWorkplace(Long workplaceId, CurrentUser currentUser) {
+        Workplace workplace = getWorkplaceById(workplaceId);
+        User user = userRepository.getUserById(currentUser.getUser().getId());
+        user.getWorkplaces().remove(workplace);
+        userRepository.save(user);
+        workplaceRepository.deleteById(workplaceId);
     }
 
     public void joinWorkplace(CurrentUser currentUser, Long workplaceId) {

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Task</title>
+</head>
+<body>
+<div th:replace="navbar :: navbar"></div>
+<div th:replace="workplace-navbar :: workplaceNavbar(${workplace_id})"></div>
+<h1>Create Task</h1>
+<form th:action="@{'/workplaces/' + ${workplace_id} + '/tasks/create'}" th:object="${task}" method="post">
+  <div>
+    <label for="name">Name:</label>
+    <input type="text" th:field="*{title}" id="name" required />
+  </div>
+  <div>
+    <label for="description">Description:</label>
+    <textarea th:field="*{description}" id="description" required></textarea>
+  </div>
+  <button type="submit">Create</button>
+</form>
+</body>
+</html>

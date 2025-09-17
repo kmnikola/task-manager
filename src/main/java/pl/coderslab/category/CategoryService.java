@@ -1,6 +1,7 @@
 package pl.coderslab.category;
 
 import org.springframework.stereotype.Service;
+import pl.coderslab.task.Task;
 import pl.coderslab.task.TaskRepository;
 import pl.coderslab.task.TaskService;
 import pl.coderslab.workplace.Workplace;
@@ -15,10 +16,12 @@ import java.util.List;
 public class CategoryService {
     private final WorkplaceService workplaceService;
     private final CategoryRepository categoryRepository;
+    private final TaskRepository taskRepository;
 
-    public CategoryService(CategoryRepository categoryRepository, WorkplaceService workplaceService) {
+    public CategoryService(CategoryRepository categoryRepository, WorkplaceService workplaceService, TaskRepository taskRepository) {
         this.categoryRepository = categoryRepository;
         this.workplaceService = workplaceService;
+        this.taskRepository = taskRepository;
     }
 
 
@@ -36,6 +39,10 @@ public class CategoryService {
     }
 
     public void deleteById(Long workplaceId, Long categoryId) {
+        for (Task task : taskRepository.findAllByWorkplaceIdAndCategoryId(workplaceId, categoryId)) {
+            task.setCategory(null);
+            taskRepository.save(task);
+        }
         Workplace workplace = workplaceService.getWorkplaceById(workplaceId);
         workplace.getCategories().remove(getById(categoryId));
         workplaceService.updateWorkplace(workplace);

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Categories</title>
+  <style>
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 5px; text-align: left; }
+    th { background: #f0f0f0; }
+    form { display: inline; }
+  </style>
+</head>
+<body>
+<div th:replace="navbar :: navbar"></div>
+<div th:replace="workplace-navbar :: workplaceNavbar(${workplace_id})"></div>
+
+<h1>Categories</h1>
+
+<!-- Button to add a category -->
+<a th:href="@{'/workplaces/' + ${workplace_id} + '/categories/create'}">
+  <button type="button">Add Category</button>
+</a>
+
+<table>
+  <thead>
+  <tr>
+    <th>Name</th>
+    <th>Actions</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="category : ${categories}">
+    <td th:text="${category.name}">Category Name</td>
+    <td>
+      <!-- Edit -->
+      <a th:href="@{'/workplaces/' + ${workplace_id} + '/categories/edit?category_id=' + ${category.id}}">
+        <button type="button">Edit</button>
+      </a>
+
+      <!-- Delete -->
+      <form th:action="@{'/workplaces/' + ${workplace_id} + '/categories/delete'}" method="post">
+        <input type="hidden" name="category_id" th:value="${category.id}"/>
+        <button type="submit" onclick="return confirm('Delete this category?')">Delete</button>
+      </form>
+    </td>
+  </tr>
+  </tbody>
+</table>
+</body>
+</html>

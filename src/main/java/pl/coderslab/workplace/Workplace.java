@@ -7,6 +7,7 @@ import lombok.Setter;
 import pl.coderslab.category.Category;
 import pl.coderslab.profile.Profile;
 import pl.coderslab.recurrence.Recurrence;
+import pl.coderslab.user.User;
 import pl.coderslab.workplaceGroup.WorkplaceGroup;
 import pl.coderslab.task.Task;
 
@@ -22,6 +23,9 @@ public class Workplace {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    @JsonIgnore
+    @ManyToOne
+    private User user;
     @JsonIgnore
     @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Profile> profiles = new ArrayList<>();

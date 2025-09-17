@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>Update Account</title></head>
+<body>
+<h2>Update Account</h2>
+<form th:action="@{/update-account}" th:object="${user}" method="post">
+  <label>Username: <input th:field="*{username}" /></label><br/>
+  <label>Password: <input type="password" th:field="*{password}" /></label><br/>
+  <button type="submit">Update</button>
+</form>
+</body>
+</html>

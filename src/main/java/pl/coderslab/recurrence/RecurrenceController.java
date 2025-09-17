@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/{workplace_id}/tasks/{task_id}/recurrence")
+@RequestMapping("/workplaces/{workplace_id}/tasks/{task_id}/recurrence")
 public class RecurrenceController {
     private final RecurrenceService recurrenceService;
     public RecurrenceController(RecurrenceService recurrenceService) {

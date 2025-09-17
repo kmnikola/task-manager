@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tasks List</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 5px;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="navbar :: navbar"></div>
+<div th:if="${canEdit}">
+    <div th:replace="workplace-navbar :: workplaceNavbar(${workplace_id})"></div>
+</div>
+<h1>Tasks</h1>
+
+<!-- Editable view -->
+<div th:if="${canEdit}">
+    <a th:href="@{'/workplaces/' + ${workplace_id} + '/tasks/create'}">
+        <button type="button">Create Task</button>
+    </a>
+
+    <ul>
+        <li th:each="task : ${tasks}">
+            <strong th:text="${task.title}">Task Name</strong> -
+            <span th:text="${task.description}">Description</span>
+
+            <!-- Show current category -->
+            (<span th:text="${task.category != null ? task.category.name : '---'}"></span>)
+
+            <!-- Remove category button (only if has category) -->
+            <span th:if="${task.category != null}">
+                <form th:action="@{'/workplaces/' + ${workplace_id} + '/tasks/remove_category'}"
+                      method="post" style="display:inline;">
+                    <input type="hidden" name="task_id" th:value="${task.id}"/>
+                    <button type="submit" style="color:red; border:none; background:none; cursor:pointer;">
+                        ✖
+                    </button>
+                </form>
+            </span>
+
+            <!-- Dropdown to set category -->
+            <span th:if="${task.category == null}">
+                <form th:action="@{'/workplaces/' + ${workplace_id} + '/tasks/set_category'}"
+                              method="post" style="display:inline;">
+                    <input type="hidden" name="task_id" th:value="${task.id}"/>
+                    <select name="category_id" onchange="this.form.submit()">
+                        <option value="" disabled selected>Set category</option>
+                        <option th:each="cat : ${categories}"
+                                        th:value="${cat.id}"
+                                        th:text="${cat.name}">
+                        </option>
+                    </select>
+                </form>
+            </span>
+            <div>
+                <strong>Groups:</strong>
+                <span th:if="${#lists.isEmpty(task.workplaceGroups)}">---</span>
+                <span th:each="group : ${task.workplaceGroups}">
+                <span th:text="${group.name}"></span>
+                    <!-- Optional: Remove button -->
+                <form th:action="@{'/workplaces/' + ${workplace_id} + '/tasks/remove_group'}"
+                      method="post" style="display:inline;">
+                    <input type="hidden" name="task_id" th:value="${task.id}"/>
+                    <input type="hidden" name="group_id" th:value="${group.id}"/>
+                    <button type="submit" style="color:red; border:none; background:none; cursor:pointer;">
+                        ✖
+                    </button>
+                </form>
+                </span>
+            </div>
+
+            <!-- Dropdown to add a new group to the task -->
+            <form th:action="@{'/workplaces/' + ${workplace_id} + '/tasks/add_group'}"
+                  method="post" style="display:inline;">
+                <input type="hidden" name="task_id" th:value="${task.id}"/>
+                <select name="group_id" onchange="this.form.submit()">
+                    <option value="" disabled selected>Add group</option>
+                    <option th:each="g : ${groups}"
+                            th:value="${g.id}"
+                            th:text="${g.name}">
+                    </option>
+                </select>
+            </form>
+            <!-- Edit/Delete -->
+            <a th:href="@{'/workplaces/' + ${workplace_id} + '/tasks/' + ${task.id} + '/edit'}">
+                <button type="button">Edit</button>
+            </a>
+            <form th:action="@{'/workplaces/' + ${workplace_id} + '/tasks/delete'}"
+                  method="post" style="display:inline;">
+                <input type="hidden" name="task_id" th:value="${task.id}"/>
+                <button type="submit">Delete</button>
+            </form>
+        </li>
+    </ul>
+</div>
+
+<!-- Read-only grouped view -->
+<div th:if="${!canEdit}">
+
+    <div th:each="category : ${tasksByCategory.keySet()}">
+
+        <h2 th:text="${category != null ? category.name : 'Uncategorized'}"></h2>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Active</th>
+                <th>Toggle</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="task : ${tasksByCategory.get(category)}">
+                <td th:text="${task.title}">Task Name</td>
+                <td th:text="${task.description}">Desc</td>
+                <td th:text="${task.active} ? 'Yes' : 'No'">Active</td>
+                <td>
+                    <form th:action="@{'/workplaces/' + ${workplace_id} + '/tasks/toggle-active'}"
+                          method="post">
+                        <input type="hidden" name="task_id" th:value="${task.id}"/>
+                        <button type="submit">Tick</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+
+</body>
+</html>

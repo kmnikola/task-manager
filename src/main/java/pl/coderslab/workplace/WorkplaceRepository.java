@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import pl.coderslab.profile.Profile;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,4 +15,7 @@ public interface WorkplaceRepository extends JpaRepository<Workplace, Long> {
 
     @Query("select w from Workplace w join w.profiles p where w.id = :workplaceId and p.user.id = :userId")
     Optional<Workplace> findByIdAndUserId(Long workplaceId, Long userId);
+
+    @Query("select w from Workplace w where w.user.id = :userId")
+    List<Workplace> getWorkplacesByUserId(Long userId);
 }

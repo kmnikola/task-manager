@@ -3,15 +3,15 @@ POST http://localhost:8080/register
 Content-Type: application/json
 
 {
-  "username": "sampleOwner",
-  "password": "coderslab"
+  "username": "sample",
+  "password": "sample"
 }
 ###
 //login owner
 POST http://localhost:8080/login
 Content-Type: application/x-www-form-urlencoded
 
-username=sampleOwner&password=coderslab
+username=sample&password=sample
 
 ###
 POST http://localhost:8080/register

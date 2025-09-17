@@ -57,13 +57,9 @@ public class ProfileService {
         profileRepository.save(profile);
     }
 
-    public void removeProfileFromWorkplace(Long profileId, Long userId) {
+    public void removeProfileFromWorkplace(Long profileId) {
         Profile profile = getProfileById(profileId);
-        if (!profile.getUser().getId().equals(userId)) {
-            deleteProfile(profileId);
-        } else {
-            System.out.println("You cannot remove yourself from the workplace as the owner. Remove the workplace itself.");
-        }
+        deleteProfile(profileId);
     }
 
     public void deleteProfile(Long profileId) {

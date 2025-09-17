@@ -2,76 +2,124 @@ package pl.coderslab.task;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import pl.coderslab.access.WorkplaceAccessEvaluator;
 import pl.coderslab.auth.CurrentUser;
+import pl.coderslab.category.Category;
+import pl.coderslab.category.CategoryService;
+import pl.coderslab.workplace.Workplace;
+import pl.coderslab.workplace.WorkplaceService;
+import pl.coderslab.workplaceGroup.WorkplaceGroupService;
 
 import java.util.List;
+import java.util.Map;
 
-@RestController
-@RequestMapping("/{workplace_id}/tasks")
+@Controller
+@RequestMapping("/workplaces/{workplace_id}/tasks")
 public class TaskController {
     private final TaskService taskService;
-    public TaskController(TaskService taskService) {
+    private final WorkplaceAccessEvaluator workplaceAccess;
+    private final WorkplaceGroupService workplaceGroupService;
+    private final CategoryService categoryService;
+
+    public TaskController(TaskService taskService, WorkplaceAccessEvaluator workplaceAccess, WorkplaceGroupService workplaceGroupService, CategoryService categoryService) {
         this.taskService = taskService;
+        this.workplaceAccess = workplaceAccess;
+        this.workplaceGroupService = workplaceGroupService;
+        this.categoryService = categoryService;
     }
 
     @PreAuthorize("@workplaceAccess.canAccessWorkplace(authentication, #workplace_id)")
     @GetMapping("")
-    public List<Task> getTasks(@AuthenticationPrincipal CurrentUser currentUser, @PathVariable("workplace_id") Long workplace_id) {
-        return taskService.getAllTasksByWorkplaceIdAndUser(workplace_id, currentUser);
-    }
+    public String getTasks(@AuthenticationPrincipal CurrentUser currentUser, @PathVariable("workplace_id") Long workplace_id, Model model) {
+        boolean canEdit = workplaceAccess.canEditWorkplace(currentUser, workplace_id);
 
-    @PreAuthorize("@workplaceAccess.canAccessWorkplace(authentication, #workplace_id)")
-    @GetMapping("/all")
-    public List<Task> getAllTasks(@PathVariable("workplace_id") Long workplace_id) {
-        return taskService.getAllTasksByWorkplaceId(workplace_id);
+        model.addAttribute("canEdit", canEdit);
+        model.addAttribute("workplace_id", workplace_id);
+
+        if (canEdit) {
+            List<Task> tasks = taskService.getAllTasksByWorkplaceId(workplace_id);
+            model.addAttribute("tasks", tasks);
+            model.addAttribute("groups", workplaceGroupService.getWorkplaceGroupsInWorkplace(workplace_id));
+            model.addAttribute("categories", categoryService.getAllCategoriesByWorkplaceId(workplace_id));
+        } else {
+            List<Task> tasks = taskService.getAllTasksByWorkplaceIdAndUser(workplace_id, currentUser);
+            model.addAttribute("tasksByCategory", taskService.getTasksByCategories(workplace_id, tasks));
+        }
+        return "tasks/list";
     }
 
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id)")
-    @PostMapping("")
-    public void addTask(@PathVariable("workplace_id") Long workplace_id, @RequestBody Task task) {
+    @GetMapping("/create")
+    public String showCreateForm(@PathVariable("workplace_id") Long workplace_id, Model model) {
+        model.addAttribute("task", new Task());
+        return "tasks/form";
+    }
+
+    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id)")
+    @PostMapping("/create")
+    public String addTask(@PathVariable("workplace_id") Long workplace_id, @ModelAttribute Task task) {
         taskService.addTaskToWorkplace(task, workplace_id);
+        return "redirect:/workplaces/{workplace_id}/tasks";
     }
 
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id)")
-    @DeleteMapping("/{task_id}")
-    public void deleteTask(@PathVariable("workplace_id") Long workplace_id, @PathVariable("task_id") Long task_id) {
+    @PostMapping("/delete")
+    public String deleteTask(@PathVariable("workplace_id") Long workplace_id, @RequestParam("task_id") Long task_id) {
         taskService.deleteById(workplace_id, task_id);
-    }
-
-    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task, #workplace_id)")
-    @PutMapping("")
-    public void editTask(@PathVariable("workplace_id") Long workplace_id, @RequestBody Task task) {
-        taskService.updateTask(task);
+        return "redirect:/workplaces/{workplace_id}/tasks";
     }
 
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id)")
-    @PutMapping("/{task_id}/toggle-active")
-    public void toggleTaskActive(@PathVariable("workplace_id") Long workplace_id, @PathVariable("task_id") Long task_id) {
+    @GetMapping("/{task_id}/edit")
+    public String showEditForm(@PathVariable("workplace_id") Long workplace_id, @PathVariable("task_id") Long task_id, Model model) {
+        model.addAttribute("task", taskService.getTaskById(task_id));
+        return "tasks/edit";
+    }
+
+    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task.getId(), #workplace_id)")
+    @PostMapping("/edit")
+    public String editTask(@PathVariable("workplace_id") Long workplace_id, @ModelAttribute Task task) {
+        taskService.updateTask(task);
+        return "redirect:/workplaces/{workplace_id}/tasks";
+    }
+
+    @PreAuthorize("@workplaceAccess.canAccessWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id)")
+    @PostMapping("/toggle-active")
+    public String toggleTaskActive(@PathVariable("workplace_id") Long workplace_id, @RequestParam("task_id") Long task_id) {
         taskService.toggleActive(task_id);
+        return "redirect:/workplaces/{workplace_id}/tasks";
     }
 
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id) && " + "@groupAccess.groupBelongsToWorkplace(#group_id, #workplace_id)")
-    @PutMapping("/{task_id}/add_group/{group_id}")
-    public void addGroupToTask(@PathVariable("workplace_id") Long workplace_id, @PathVariable("task_id") Long task_id, @PathVariable("group_id") Long group_id) {
+    @PostMapping("/add_group")
+    public String addGroupToTask(@PathVariable("workplace_id") Long workplace_id, @RequestParam("task_id") Long task_id, @RequestParam("group_id") Long group_id) {
         taskService.addGroupToTask(group_id, task_id);
+        return "redirect:/workplaces/{workplace_id}/tasks";
     }
 
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id) && " + "@groupAccess.groupBelongsToWorkplace(#group_id, #workplace_id)")
-    @DeleteMapping("/{task_id}/remove_group/{group_id}")
-    public void removeGroupFromTask(@PathVariable("workplace_id") Long workplace_id, @PathVariable("task_id") Long task_id, @PathVariable("group_id") Long group_id) {
+    @PostMapping("/remove_group")
+    public String removeGroupFromTask(@PathVariable("workplace_id") Long workplace_id, @RequestParam("task_id") Long task_id, @RequestParam("group_id") Long group_id) {
         taskService.removeGroupFromTask(group_id, task_id);
+        return "redirect:/workplaces/{workplace_id}/tasks";
     }
 
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id) && " + "@categoryAccess.categoryBelongsToWorkplace(#category_id, #workplace_id)")
-    @PutMapping("/{task_id}/set_category/{category_id}")
-    public void addCategoryToTask(@PathVariable("workplace_id") Long workplace_id, @PathVariable("task_id") Long task_id, @PathVariable("category_id") Long category_id) {
+    @PostMapping("/set_category")
+    public String addCategoryToTask(@PathVariable("workplace_id") Long workplace_id, @RequestParam("task_id") Long task_id, @RequestParam("category_id") Long category_id) {
         taskService.setCategoryToTask(category_id, task_id);
+        return "redirect:/workplaces/{workplace_id}/tasks";
+
     }
 
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id)")
-    @DeleteMapping("/{task_id}/remove_category")
-    public void removeCategoryFromTask(@PathVariable("workplace_id") Long workplace_id, @PathVariable("task_id") Long task_id) {
+    @PostMapping("/remove_category")
+    public String removeCategoryFromTask(@PathVariable("workplace_id") Long workplace_id, @RequestParam("task_id") Long task_id) {
         taskService.removeCategoryFromTask(task_id);
+        return "redirect:/workplaces/{workplace_id}/tasks";
+
     }
 }
