@@ -1,6 +1,7 @@
 # Task Manager
 
 A Spring Boot-based application for collaborative task management for small teams. The application allows to create workplaces in which the user can prepare task-lists, with categorization, scheduling and user management.
+
 The workplaces can be shared. The application splits the functionality between the owner of the workplace who manages the tasks and their attributes, and view-only users who can fulfill a task in their view.
 
 ## Features
