@@ -41,3 +41,4 @@ The workplaces can be shared. The application splits the functionality between t
 
 ## License
 This project is for educational purposes only.
+Prepared for a Java Bootcamp @ Coderslab
