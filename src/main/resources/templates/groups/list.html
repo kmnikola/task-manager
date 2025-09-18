@@ -3,24 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <title>Workplace Groups</title>
-  <style>
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ccc; padding: 5px; text-align: left; }
-    th { background: #f0f0f0; }
-    form { display: inline; }
-  </style>
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-<div th:replace="navbar :: navbar"></div>
-<div th:replace="workplace-navbar :: workplaceNavbar(${workplace_id})"></div>
+<div class="navbar-container">
+  <div th:replace="navbar :: navbar"></div>
+  <div th:replace="workplace-navbar :: workplaceNavbar(${workplace_id})"></div>
+</div>
 
 <h1>Workplace Groups</h1>
-
-<a th:href="@{'/workplaces/' + ${workplace_id} + '/groups/create'}">
-  <button type="button">Add Group</button>
-</a>
-
+<div class="list-table-container">
 <table>
+  <colgroup>
+    <col class="col-title">
+    <col class="col-actions">
+  </colgroup>
   <thead>
   <tr>
     <th>Name</th>
@@ -28,6 +25,16 @@
   </tr>
   </thead>
   <tbody>
+  <tr>
+    <form th:action="@{'/workplaces/' + ${workplace_id} + '/groups/create'}" th:object="${group}" method="post">
+      <td>
+        <input type="text" th:field="*{name}" placeholder="Group Name" required/>
+      </td>
+      <td>
+        <input type="submit" value="Add Group">
+      </td>
+    </form>
+  </tr>
   <tr th:each="group : ${groups}">
     <td th:text="${group.name}">Group Name</td>
     <td>
@@ -42,5 +49,6 @@
   </tr>
   </tbody>
 </table>
+</div>
 </body>
 </html>

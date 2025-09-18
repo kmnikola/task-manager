@@ -24,17 +24,10 @@ public class WorkplaceGroupController {
     @GetMapping("")
     public String listGroups(@PathVariable("workplace_id") Long workplace_id, Model model) {
         List<WorkplaceGroup> groups = workplaceGroupService.getWorkplaceGroupsInWorkplace(workplace_id);
+        model.addAttribute("group", new WorkplaceGroup());
         model.addAttribute("groups", groups);
         model.addAttribute("workplace_id", workplace_id);
         return "groups/list";
-    }
-
-    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id)")
-    @GetMapping("/create")
-    public String showCreateForm(@PathVariable("workplace_id") Long workplace_id, Model model) {
-        model.addAttribute("workplaceGroup", new WorkplaceGroup());
-        model.addAttribute("workplace_id", workplace_id);
-        return "groups/form";
     }
 
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id)")

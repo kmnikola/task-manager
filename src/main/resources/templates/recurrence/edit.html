@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Recurrence Set</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="navbar-container">
+  <div th:replace="navbar :: navbar"></div>
+  <div th:replace="workplace-navbar :: workplaceNavbar(${workplace_id})"></div>
+</div>
+
+<div class="container">
+  <h1>Edit "[[${recurrenceSet.name}]]"</h1>
+
+  <div class="card">
+    <h3>Add New Recurrence</h3>
+    <form th:action="@{'/workplaces/' + ${workplace_id} + '/recurrences/edit/add-recurrence'}"
+          method="post"
+          th:object="${recurrence}">
+
+      <input type="hidden" name="recurrenceSet.id" th:value="${recurrenceSet.id}" />
+
+      <div class="form-group">
+        <label for="day">Day of Week:</label>
+        <select id="day" th:field="*{day}" required class="form-control">
+          <option value="">Select a day...</option>
+          <option th:each="dayOption : ${T(java.time.DayOfWeek).values()}"
+                  th:value="${dayOption}"
+                  th:text="${#strings.capitalize(#strings.toLowerCase(dayOption))}">
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="time">Time:</label>
+        <input type="time" id="time" th:field="*{time}" required class="form-control">
+      </div>
+
+      <button type="submit" class="btn btn-primary">Add Recurrence</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Current Recurrences</h3>
+  </div>
+    <div th:if="${recurrences == null or #lists.isEmpty(recurrences)}" class="alert alert-info">
+      <p>No recurrences configured yet.</p>
+    </div>
+
+    <div th:if="${recurrences != null and !#lists.isEmpty(recurrences)}">
+      <div th:each="rec : ${recurrences}" class="recurrence-item">
+        <div th:id="'display-' + ${rec.id}" class="recurrence-display">
+          <div class="recurrence-info">
+            <strong th:text="${rec.day}">Day</strong>
+            at
+            <strong th:text="${rec.time}">Time</strong>
+          </div>
+          <div class="recurrence-actions">
+            <button type="button"
+                    class="btn btn-sm btn-secondary"
+                    th:onclick="'showEdit(' + ${rec.id} + ')'">
+              Edit
+            </button>
+
+            <form th:action="@{'/workplaces/' + ${workplace_id} + '/recurrences/remove-recurrence'}"
+                  method="post"
+                  style="display: inline;"
+                  onsubmit="return confirm('Delete this recurrence?')">
+              <input type="hidden" name="recurrence_id" th:value="${rec.id}">
+              <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+            </form>
+          </div>
+        </div>
+
+        <div th:id="'edit-' + ${rec.id}" class="edit-form" style="display: none;">
+          <form th:action="@{'/workplaces/' + ${workplace_id} + '/recurrences/edit/recurrence'}"
+                method="post">
+
+            <input type="hidden" name="id" th:value="${rec.id}">
+            <input type="hidden" name="recurrenceSet.id" th:value="${recurrenceSet.id}">
+
+            <div class="form-group">
+              <label>Day:</label>
+              <select name="day" required class="form-control">
+                <option th:each="dayOption : ${T(java.time.DayOfWeek).values()}"
+                        th:value="${dayOption}"
+                        th:selected="${dayOption == rec.day}"
+                        th:text="${#strings.capitalize(#strings.toLowerCase(dayOption))}">
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Time:</label>
+              <input type="time" name="time" th:value="${rec.time}" required class="form-control">
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-sm btn-success">Save</button>
+              <button type="button"
+                      class="btn btn-sm btn-secondary"
+                      th:onclick="'hideEdit(' + ${rec.id} + ')'">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="justify-content: center" class="card">
+    <a  th:href="@{'/workplaces/' + ${workplace_id} + '/recurrences'}" class="btn btn-secondary">
+      BACK TO LIST
+    </a>
+  </div>
+<script>
+  function showEdit(recurrenceId) {
+    const displayElement = document.getElementById('display-' + recurrenceId);
+    if (displayElement) {
+      displayElement.style.display = 'none';
+    }
+
+    const editElement = document.getElementById('edit-' + recurrenceId);
+    if (editElement) {
+      editElement.style.display = 'block';
+    }
+  }
+
+  function hideEdit(recurrenceId) {
+    const displayElement = document.getElementById('display-' + recurrenceId);
+    if (displayElement) {
+      displayElement.style.display = 'flex';
+    }
+
+    const editElement = document.getElementById('edit-' + recurrenceId);
+    if (editElement) {
+      editElement.style.display = 'none';
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,4 +1,3 @@
-// START GENAI
 package pl.coderslab.auth;
 
 import org.springframework.context.annotation.Bean;
@@ -18,21 +17,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Configure authorization
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/register", "/login", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/register", "/login", "/css/**", "/js/**").permitAll()
                         .anyRequest().hasRole("USER")
                 )
 
-                // Configure form login with Thymeleaf template
                 .formLogin(form -> form
-                        .loginPage("/login") // Your Thymeleaf login page mapping
-                        .loginProcessingUrl("/login") // POST from login form
-                        .defaultSuccessUrl("/workplaces", true) // Redirect after login
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/workplaces", true)
                         .permitAll()
                 )
 
-                // Configure logout
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
@@ -47,5 +43,3 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
-
-// END GENAI

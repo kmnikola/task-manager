@@ -1,12 +1,29 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><title>Update Account</title></head>
+<head>
+  <link rel="stylesheet" href="/css/styles.css">
+  <title>Update Account</title>
+</head>
 <body>
+<div class="navbar-container">
+  <div th:replace="navbar :: navbar"></div>
+</div>
+
 <h2>Update Account</h2>
-<form th:action="@{/update-account}" th:object="${user}" method="post">
-  <label>Username: <input th:field="*{username}" /></label><br/>
-  <label>Password: <input type="password" th:field="*{password}" /></label><br/>
-  <button type="submit">Update</button>
-</form>
+
+<div class="tile-container">
+  <div class="tile">
+    <form th:action="@{/update-account}" th:object="${user}" method="post" class="form-vertical">
+      <label>Username:
+        <input th:field="*{username}" required />
+      </label>
+      <label>Password:
+        <input type="password" th:field="*{password}" required />
+      </label>
+      <button type="submit" class="btn">Update</button>
+    </form>
+  </div>
+</div>
+
 </body>
 </html>

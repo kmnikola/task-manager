@@ -2,47 +2,76 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <title>Workplaces</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <title>Workplaces</title>
 </head>
 <body>
-<div th:replace="navbar :: navbar"></div>
-
+<div class="navbar-container">
+    <div th:replace="navbar :: navbar"></div>
+</div>
 <h1>Workplaces</h1>
-<form th:action="@{/workplaces/join}" method="post" style="margin-bottom: 20px;">
-  <input type="text" name="workplace_id" placeholder="Enter Workplace ID" required>
-  <button type="submit">Join Workplace</button>
-</form>
-<a th:href="@{/workplaces/create}">Create New Workplace</a>
 
-<ul>
-  <li th:each="workplace : ${workplaces}">
-    <!-- Workplace name -->
-    <span th:text="${workplace.name}">Workplace Name</span>
-
-    <!-- Tasks link -->
-    <a th:href="@{'/workplaces/' + ${workplace.id} + '/tasks'}">Tasks</a>
-
-    <!-- EDIT + REMOVE buttons if user can edit -->
-    <span th:if="${@workplaceAccess.canEditWorkplace(#authentication, workplace.id)}">
-      | <a th:href="@{'/workplaces/' + ${workplace.id} + '/edit'}">Edit</a>
-      <form th:action="@{'/workplaces/delete/' + ${workplace.id}}" method="post" style="display:inline;">
-        <button type="submit" onclick="return confirm('Are you sure you want to remove this workplace?');">
-          Remove
+<div class="grid-tiles">
+    <!-- Workplace tiles -->
+    <div class="tile" th:each="workplace, iterStat : ${workplaces}">
+        <button class="edit-btn" type="button"
+                th:if="${@workplaceAccess.canEditWorkplace(#authentication, workplace.id)}"
+                th:onclick="'enableEdit(' + ${iterStat.index} + ')'">✏️
         </button>
-      </form>
-    </span>
 
-    <!-- LEAVE button if user cannot edit but can access -->
-    <span th:if="${!@workplaceAccess.canEditWorkplace(#authentication, workplace.id)
-                 and @workplaceAccess.canAccessWorkplace(#authentication, workplace.id)}">
-      <form th:action="@{'/workplaces/leave/' + ${workplace.id}}" method="post" style="display:inline;">
-        <button type="submit" onclick="return confirm('Are you sure you want to leave this workplace?');">
-          Leave
-        </button>
-      </form>
-    </span>
-  </li>
-</ul>
+        <!-- View mode -->
+        <a class="tile-link" th:id="'view-name-' + ${iterStat.index}"
+           th:href="@{'/workplaces/' + ${workplace.id} + '/tasks'}">
+            <div th:text="${workplace.name}">Workplace Name</div>
+            <div th:text="' #' + ${workplace.id}">Workplace Id</div>
+        </a>
 
+        <!-- Edit mode -->
+        <form th:action="@{'/workplaces/edit'}"
+              th:id="'edit-form-' + ${iterStat.index}"
+              method="post" style="display: none;">
+            <input type="hidden" name="id" th:value="${workplace.id}">
+            <input type="text" name="name" th:value="${workplace.name}" required>
+            <button type="submit" class="btn">Save</button>
+        </form>
+
+        <!-- Actions -->
+        <div class="tile-actions">
+        <span th:if="${!@workplaceAccess.canEditWorkplace(#authentication, workplace.id)
+                      and @workplaceAccess.canAccessWorkplace(#authentication, workplace.id)}">
+            <form th:action="@{'/workplaces/leave/' + ${workplace.id}}" method="post">
+                <button type="submit" class="btn btn-danger">Leave</button>
+            </form>
+        </span>
+            <span th:if="${@workplaceAccess.canEditWorkplace(#authentication, workplace.id)}">
+            <form th:action="@{'/workplaces/delete/' + ${workplace.id}}" method="post">
+                <button type="submit" class="btn btn-danger">Remove</button>
+            </form>
+        </span>
+        </div>
+    </div>
+    <div class="tile">
+        <div>
+            <h3>Join Workplace</h3>
+            <form th:action="@{/workplaces/join}" method="post" class="form-vertical">
+                <input type="text" name="workplace_id" placeholder="Enter Workplace ID" required>
+                <button type="submit" class="btn">Join</button>
+            </form>
+        </div>
+        <div>
+            <h3>Create Workplace</h3>
+            <form th:action="@{/workplaces/create}" th:object="${workplace}" method="post" class="form-vertical">
+                <input type="text" th:field="*{name}" placeholder="Workplace Name" required>
+                <button type="submit" class="btn">Create</button>
+            </form>
+        </div>
+    </div>
+</div>
 </body>
+<script>
+    function enableEdit(index) {
+        document.getElementById('view-name-' + index).style.display = 'none';
+        document.getElementById('edit-form-' + index).style.display = 'flex';
+    }
+</script>
 </html>

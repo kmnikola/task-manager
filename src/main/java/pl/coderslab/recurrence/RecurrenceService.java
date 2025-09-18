@@ -3,6 +3,8 @@ package pl.coderslab.recurrence;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.coderslab.recurrenceSet.RecurrenceSet;
+import pl.coderslab.recurrenceSet.RecurrenceSetService;
 import pl.coderslab.task.Task;
 import pl.coderslab.task.TaskService;
 import pl.coderslab.workplace.Workplace;
@@ -10,42 +12,49 @@ import pl.coderslab.workplace.WorkplaceService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RecurrenceService {
     private final RecurrenceRepository recurrenceRepository;
     private final TaskService taskService;
     private final WorkplaceService workplaceService;
-    public RecurrenceService(RecurrenceRepository recurrenceRepository, TaskService taskService, WorkplaceService workplaceService) {
+    private final RecurrenceSetService recurrenceSetService;
+    public RecurrenceService(RecurrenceRepository recurrenceRepository, TaskService taskService, WorkplaceService workplaceService, RecurrenceSetService recurrenceSetService) {
         this.recurrenceRepository = recurrenceRepository;
         this.taskService = taskService;
         this.workplaceService = workplaceService;
+        this.recurrenceSetService = recurrenceSetService;
     }
 
-    public List<Recurrence> getAllRecurrencesByTask(Long taskId) {
-        return taskService.getTaskById(taskId).getRecurrences();
+    public Recurrence getRecurrenceById(Long id) {
+        return recurrenceRepository.findById(id).orElseThrow();
     }
 
-    public void createRecurrence(Recurrence recurrence, Long workplaceId) {
-        recurrenceRepository.save(recurrence);
+    public List<Recurrence> getAllRecurrences(Long workplaceId) {
+        return recurrenceRepository.getAllByWorkplaceId(workplaceId);
+    }
+
+    public List<Recurrence> getAllRecurrencesByRecurrenceSetId(Long recurrenceSetId) {
+        return recurrenceRepository.getAllByRecurrenceSetId(recurrenceSetId);
+    }
+
+    public void createRecurrence(Recurrence recurrence, Long workplaceId, Long recurrenceSetId) {
         Workplace workplace = workplaceService.getWorkplaceById(workplaceId);
+        recurrence.setWorkplace(workplace);
+        RecurrenceSet recurrenceSet = recurrenceSetService.getRecurrenceSetById(recurrenceSetId);
+        recurrence.setRecurrenceSet(recurrenceSet);
+        recurrenceRepository.save(recurrence);
+        recurrenceSet.getRecurrences().add(recurrence);
+        recurrenceSetService.updateRecurrenceSet(recurrenceSet);
         workplace.getRecurrences().add(recurrence);
         workplaceService.updateWorkplace(workplace);
     }
 
-    public void addRecurrenceToTask(Recurrence recurrence, Long taskId) {
-        taskService.addRecurrenceToTask(taskId, recurrence);
-    }
-
-    public void editRecurrence(Recurrence recurrence) {
-        Recurrence recurrenceInDB = recurrenceRepository.findById(recurrence.getId()).orElseThrow();
-        if (recurrence.getDays() != null) {
-            recurrenceInDB.setDays(recurrence.getDays());
-        }
-        if (recurrence.getTime() != null) {
-            recurrenceInDB.setTime(recurrence.getTime());
-        }
-        recurrenceRepository.save(recurrenceInDB);
+    public void editRecurrence(Recurrence recurrence, Long workplaceId) {
+        Workplace workplace = workplaceService.getWorkplaceById(workplaceId);
+        recurrence.setWorkplace(workplace);
+        recurrenceRepository.save(recurrence);
     }
 
     public void removeRecurrence(Long recurrenceId) {
@@ -61,7 +70,8 @@ public class RecurrenceService {
 
         for (Recurrence recurrence : recurrences) {
             if (recurrence.matches(now)) {
-                List<Task> tasks = taskService.getAllTasksByRecurrence(recurrence.getId());
+                RecurrenceSet recurrenceSet = recurrenceSetService.getRecurrenceSetByRecurrenceId(recurrence.getId());
+                List<Task> tasks = taskService.getAllTasksByRecurrenceSet(recurrenceSet.getId());
                 for (Task task : tasks) {
                     if (!task.isActive()) {
                         taskService.activateTask(task);
@@ -69,13 +79,5 @@ public class RecurrenceService {
                 }
             }
         }
-    }
-
-    public void copyRecurrences(Long copiedTaskId, Long taskId) {
-        taskService.getTaskById(copiedTaskId).getRecurrences().forEach(recurrence -> {
-            if (!taskService.getTaskById(taskId).getRecurrences().contains(recurrence)) {
-                taskService.addRecurrenceToTask(taskId, recurrence);
-            }
-        });
     }
 }

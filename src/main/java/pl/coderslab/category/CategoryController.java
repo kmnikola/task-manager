@@ -18,15 +18,9 @@ public class CategoryController {
     @GetMapping("")
     public String getCategories(@PathVariable("workplace_id") Long workplace_id, Model model) {
         List<Category> categories = categoryService.getAllCategoriesByWorkplaceId(workplace_id);
+        model.addAttribute("category", new Category());
         model.addAttribute("categories", categories);
         return "categories/list";
-    }
-
-    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id)")
-    @GetMapping("/create")
-    public String showAddCategoryForm(@PathVariable("workplace_id") Long workplace_id, Model model) {
-        model.addAttribute("category", new Category());
-        return "categories/form";
     }
 
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id)")

@@ -3,12 +3,8 @@ package pl.coderslab.category;
 import org.springframework.stereotype.Service;
 import pl.coderslab.task.Task;
 import pl.coderslab.task.TaskRepository;
-import pl.coderslab.task.TaskService;
 import pl.coderslab.workplace.Workplace;
-import pl.coderslab.workplace.WorkplaceRepository;
 import pl.coderslab.workplace.WorkplaceService;
-import pl.coderslab.workplaceGroup.WorkplaceGroup;
-import pl.coderslab.workplaceGroup.WorkplaceGroupService;
 
 import java.util.List;
 

@@ -3,25 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <title>Categories</title>
-  <style>
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ccc; padding: 5px; text-align: left; }
-    th { background: #f0f0f0; }
-    form { display: inline; }
-  </style>
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-<div th:replace="navbar :: navbar"></div>
-<div th:replace="workplace-navbar :: workplaceNavbar(${workplace_id})"></div>
+<div class="navbar-container">
+  <div th:replace="navbar :: navbar"></div>
+  <div th:replace="workplace-navbar :: workplaceNavbar(${workplace_id})"></div>
+</div>
 
 <h1>Categories</h1>
-
-<!-- Button to add a category -->
-<a th:href="@{'/workplaces/' + ${workplace_id} + '/categories/create'}">
-  <button type="button">Add Category</button>
-</a>
-
+<div class="list-table-container">
 <table>
+  <colgroup>
+    <col class="col-title">
+    <col class="col-actions">
+  </colgroup>
   <thead>
   <tr>
     <th>Name</th>
@@ -29,15 +25,23 @@
   </tr>
   </thead>
   <tbody>
+  <tr>
+    <form th:action="@{'/workplaces/' + ${workplace_id} + '/categories/create'}" th:object="${category}" method="post">
+      <td>
+        <input type="text" th:field="*{name}" placeholder="Category Title" required/>
+      </td>
+      <td>
+        <input type="submit" value="Add Category">
+      </td>
+    </form>
+  </tr>
   <tr th:each="category : ${categories}">
     <td th:text="${category.name}">Category Name</td>
     <td>
-      <!-- Edit -->
       <a th:href="@{'/workplaces/' + ${workplace_id} + '/categories/edit?category_id=' + ${category.id}}">
         <button type="button">Edit</button>
       </a>
 
-      <!-- Delete -->
       <form th:action="@{'/workplaces/' + ${workplace_id} + '/categories/delete'}" method="post">
         <input type="hidden" name="category_id" th:value="${category.id}"/>
         <button type="submit" onclick="return confirm('Delete this category?')">Delete</button>
@@ -46,5 +50,6 @@
   </tr>
   </tbody>
 </table>
+</div>
 </body>
 </html>

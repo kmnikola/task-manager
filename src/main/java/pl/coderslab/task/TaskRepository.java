@@ -18,6 +18,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query("select t from Task t where t.workplace.id = :workplaceId and t.category.id = :categoryId")
     List<Task> findAllByWorkplaceIdAndCategoryId(Long workplaceId, Long categoryId);
 
-    @Query("select t from Task t join t.recurrences r where r.id = :recurrenceId")
-    List<Task> findAllByRecurrenceId(Long recurrenceId);
+    @Query("select t from Task t where t.recurrenceSet.id = :recurrenceSetId")
+    List<Task> findAllByRecurrenceSetId(Long recurrenceSetId);
 }

@@ -1,7 +1,6 @@
 package pl.coderslab.access;
 
 import org.springframework.stereotype.Component;
-import pl.coderslab.profile.ProfileRepository;
 import pl.coderslab.profile.ProfileService;
 
 @Component("profileAccess")

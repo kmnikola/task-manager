@@ -21,22 +21,9 @@ public class WorkplaceController {
     @GetMapping("")
     public String getAllWorkplaces(@AuthenticationPrincipal CurrentUser currentUser, Model model) {
         List<Workplace> workplaces = workplaceService.getAllWorkplaces(currentUser);
+        model.addAttribute("workplace", new Workplace());
         model.addAttribute("workplaces", workplaces);
         return "workplace/list";
-    }
-
-    @PreAuthorize("@workplaceAccess.canAccessWorkplace(authentication, #workplace_id)")
-    @GetMapping("/{workplace_id}")
-    public String getWorkplaceById(@AuthenticationPrincipal CurrentUser currentUser, @PathVariable("workplace_id") Long workplace_id, Model model) {
-        Workplace workplace = workplaceService.getWorkplaceById(workplace_id);
-        model.addAttribute("workplace", workplace);
-        return "workplace/details";
-    }
-
-    @GetMapping("/create")
-    public String showCreateForm(Model model) {
-        model.addAttribute("workplace", new Workplace());
-        return "workplace/form";
     }
 
     @PostMapping("/create")
@@ -57,13 +44,6 @@ public class WorkplaceController {
     public String leaveWorkplace(@PathVariable("workplace_id") Long workplace_id, @AuthenticationPrincipal CurrentUser currentUser) {
         workplaceService.leaveWorkplace(currentUser, workplace_id);
         return "redirect:/workplaces";
-    }
-
-    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id)")
-    @GetMapping("/{workplace_id}/edit")
-    public String showEditForm(@PathVariable Long workplace_id, Model model) {
-        model.addAttribute("workplace", workplaceService.getWorkplaceById(workplace_id));
-        return "workplace/edit";
     }
 
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace.getId())")

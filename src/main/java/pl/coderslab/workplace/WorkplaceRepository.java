@@ -13,9 +13,6 @@ public interface WorkplaceRepository extends JpaRepository<Workplace, Long> {
     @Query("select w from Workplace w join w.profiles p where p.id = :profileId")
     Optional<Workplace> findByProfileId(Long profileId);
 
-    @Query("select w from Workplace w join w.profiles p where w.id = :workplaceId and p.user.id = :userId")
-    Optional<Workplace> findByIdAndUserId(Long workplaceId, Long userId);
-
     @Query("select w from Workplace w where w.user.id = :userId")
     List<Workplace> getWorkplacesByUserId(Long userId);
 }

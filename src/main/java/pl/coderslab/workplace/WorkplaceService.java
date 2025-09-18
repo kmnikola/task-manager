@@ -1,19 +1,15 @@
 package pl.coderslab.workplace;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import pl.coderslab.auth.CurrentUser;
 import pl.coderslab.profile.Profile;
 import pl.coderslab.profile.ProfileService;
 import pl.coderslab.user.UserRepository;
 import pl.coderslab.workplaceGroup.WorkplaceGroup;
-import pl.coderslab.workplaceGroup.WorkplaceGroupRepository;
 import pl.coderslab.user.User;
 import pl.coderslab.workplaceGroup.WorkplaceGroupService;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Service

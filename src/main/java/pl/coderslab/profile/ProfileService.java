@@ -25,20 +25,6 @@ public class ProfileService {
         return profileRepository.findAllByWorkplaceId(workplaceId);
     }
 
-    public List<ProfileDTO> getProfileDTOSByWorkplace(Long workplaceId) {
-        List<Profile> profiles = profileRepository.findAllByWorkplaceId(workplaceId);
-        List<ProfileDTO> profileDTOS = new ArrayList<>();
-        for (Profile profile : profiles) {
-            ProfileDTO profileDTO = ProfileDTO.builder()
-                    .id(profile.getId())
-                    .username(profile.getUser().getUsername())
-                    .workplaceGroup(profile.getWorkplaceGroup().getName())
-                    .build();
-            profileDTOS.add(profileDTO);
-        }
-        return profileDTOS;
-    }
-
     public void save(Profile profile) {
         profileRepository.save(profile);
     }
@@ -55,11 +41,6 @@ public class ProfileService {
         Profile profile = getProfileById(profileId);
         profile.setWorkplaceGroup(workplaceGroupRepository.findById(groupId).orElseThrow());
         profileRepository.save(profile);
-    }
-
-    public void removeProfileFromWorkplace(Long profileId) {
-        Profile profile = getProfileById(profileId);
-        deleteProfile(profileId);
     }
 
     public void deleteProfile(Long profileId) {

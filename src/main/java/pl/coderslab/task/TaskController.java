@@ -9,12 +9,12 @@ import pl.coderslab.access.WorkplaceAccessEvaluator;
 import pl.coderslab.auth.CurrentUser;
 import pl.coderslab.category.Category;
 import pl.coderslab.category.CategoryService;
-import pl.coderslab.workplace.Workplace;
-import pl.coderslab.workplace.WorkplaceService;
+import pl.coderslab.recurrenceSet.RecurrenceSet;
+import pl.coderslab.recurrenceSet.RecurrenceSetService;
+import pl.coderslab.workplaceGroup.WorkplaceGroup;
 import pl.coderslab.workplaceGroup.WorkplaceGroupService;
 
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/workplaces/{workplace_id}/tasks")
@@ -23,12 +23,14 @@ public class TaskController {
     private final WorkplaceAccessEvaluator workplaceAccess;
     private final WorkplaceGroupService workplaceGroupService;
     private final CategoryService categoryService;
+    private final RecurrenceSetService recurrenceSetService;
 
-    public TaskController(TaskService taskService, WorkplaceAccessEvaluator workplaceAccess, WorkplaceGroupService workplaceGroupService, CategoryService categoryService) {
+    public TaskController(TaskService taskService, WorkplaceAccessEvaluator workplaceAccess, WorkplaceGroupService workplaceGroupService, CategoryService categoryService, RecurrenceSetService recurrenceSetService) {
         this.taskService = taskService;
         this.workplaceAccess = workplaceAccess;
         this.workplaceGroupService = workplaceGroupService;
         this.categoryService = categoryService;
+        this.recurrenceSetService = recurrenceSetService;
     }
 
     @PreAuthorize("@workplaceAccess.canAccessWorkplace(authentication, #workplace_id)")
@@ -41,9 +43,11 @@ public class TaskController {
 
         if (canEdit) {
             List<Task> tasks = taskService.getAllTasksByWorkplaceId(workplace_id);
+            model.addAttribute("task", new Task());
             model.addAttribute("tasks", tasks);
             model.addAttribute("groups", workplaceGroupService.getWorkplaceGroupsInWorkplace(workplace_id));
             model.addAttribute("categories", categoryService.getAllCategoriesByWorkplaceId(workplace_id));
+            model.addAttribute("recurrenceSets", recurrenceSetService.getAllRecurrenceSets(workplace_id));
         } else {
             List<Task> tasks = taskService.getAllTasksByWorkplaceIdAndUser(workplace_id, currentUser);
             model.addAttribute("tasksByCategory", taskService.getTasksByCategories(workplace_id, tasks));
@@ -52,15 +56,23 @@ public class TaskController {
     }
 
     @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id)")
-    @GetMapping("/create")
-    public String showCreateForm(@PathVariable("workplace_id") Long workplace_id, Model model) {
-        model.addAttribute("task", new Task());
-        return "tasks/form";
-    }
-
-    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id)")
     @PostMapping("/create")
-    public String addTask(@PathVariable("workplace_id") Long workplace_id, @ModelAttribute Task task) {
+    public String addTask(@PathVariable("workplace_id") Long workplace_id, @ModelAttribute Task task, @RequestParam(value = "category_id", required = false) Long categoryId, @RequestParam(value = "recurrence_set_id", required = false) Long recurrenceSetId, @RequestParam(value = "group_ids", required = false) List<Long> groupIds) {
+        if (categoryId != null) {
+            Category category = categoryService.getById(categoryId);
+            task.setCategory(category);
+        }
+        if (recurrenceSetId != null) {
+            RecurrenceSet recurrenceSet = recurrenceSetService.getRecurrenceSetById(recurrenceSetId);
+            task.setRecurrenceSet(recurrenceSet);
+        }
+        if (groupIds != null) {
+            for (Long groupId : groupIds) {
+                WorkplaceGroup group = workplaceGroupService.getById(groupId);
+                task.getWorkplaceGroups().add(group);
+            }
+        }
+
         taskService.addTaskToWorkplace(task, workplace_id);
         return "redirect:/workplaces/{workplace_id}/tasks";
     }
@@ -120,6 +132,20 @@ public class TaskController {
     public String removeCategoryFromTask(@PathVariable("workplace_id") Long workplace_id, @RequestParam("task_id") Long task_id) {
         taskService.removeCategoryFromTask(task_id);
         return "redirect:/workplaces/{workplace_id}/tasks";
+    }
 
+    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id)")
+    @PostMapping("/set_recurrence_set")
+    public String addRecurrenceSetToTask(@PathVariable("workplace_id") Long workplace_id, @RequestParam("task_id") Long task_id, @RequestParam("recurrence_set_id") Long recurrence_set_id) {
+        RecurrenceSet recurrenceSet = recurrenceSetService.getRecurrenceSetById(recurrence_set_id);
+        taskService.setRecurrenceSetToTask(task_id, recurrenceSet);
+        return "redirect:/workplaces/{workplace_id}/tasks";
+    }
+
+    @PreAuthorize("@workplaceAccess.canEditWorkplace(authentication, #workplace_id) && " + "@taskAccess.taskBelongsToWorkplace(#task_id, #workplace_id)")
+    @PostMapping("/remove_recurrence_set")
+    public String removeRecurrenceSetFromTask(@PathVariable("workplace_id") Long workplace_id, @RequestParam("task_id") Long task_id) {
+        taskService.removeRecurrenceSetFromTask(task_id);
+        return "redirect:/workplaces/{workplace_id}/tasks";
     }
 }

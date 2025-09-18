@@ -7,6 +7,7 @@ import lombok.Setter;
 import pl.coderslab.category.Category;
 
 import pl.coderslab.recurrence.Recurrence;
+import pl.coderslab.recurrenceSet.RecurrenceSet;
 import pl.coderslab.workplaceGroup.WorkplaceGroup;
 import pl.coderslab.workplace.Workplace;
 
@@ -36,11 +37,6 @@ public class Task {
     @JsonIgnore
     @ManyToOne
     private Workplace workplace;
-    @ManyToMany
-    @JoinTable(
-            name = "task_recurrence",
-            joinColumns = @JoinColumn(name = "task_id"),
-            inverseJoinColumns = @JoinColumn(name = "recurrence_id")
-    )
-    private List<Recurrence> recurrences = new ArrayList<>();
+    @ManyToOne
+    private RecurrenceSet recurrenceSet;
 }

@@ -7,6 +7,7 @@ import lombok.Setter;
 import pl.coderslab.category.Category;
 import pl.coderslab.profile.Profile;
 import pl.coderslab.recurrence.Recurrence;
+import pl.coderslab.recurrenceSet.RecurrenceSet;
 import pl.coderslab.user.User;
 import pl.coderslab.workplaceGroup.WorkplaceGroup;
 import pl.coderslab.task.Task;
@@ -41,4 +42,7 @@ public class Workplace {
     @JsonIgnore
     @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Recurrence> recurrences = new ArrayList<>();
+    @JsonIgnore
+    @OneToMany(mappedBy = "workplace", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RecurrenceSet> recurrenceSets = new ArrayList<>();
 }

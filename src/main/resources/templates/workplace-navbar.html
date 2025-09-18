@@ -1,9 +1,8 @@
-<!-- File: templates/workplace-navbar.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>Navbar Example</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <title>Workplace Navbar</title>
 </head>
 <body>
   <div th:fragment="workplaceNavbar(workplaceId)">
@@ -20,6 +19,9 @@
         </li>
         <li>
           <a th:href="@{'/workplaces/' + ${workplace_id} + '/profiles'}">Profiles</a>
+        </li>
+        <li>
+          <a th:href="@{'/workplaces/' + ${workplace_id} + '/recurrences'}">Recurrences</a>
         </li>
       </ul>
     </nav>

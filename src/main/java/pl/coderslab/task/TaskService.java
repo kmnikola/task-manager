@@ -1,14 +1,12 @@
 package pl.coderslab.task;
 
-import org.hibernate.jdbc.Work;
 import org.springframework.stereotype.Service;
 import pl.coderslab.auth.CurrentUser;
 import pl.coderslab.category.Category;
 import pl.coderslab.category.CategoryService;
 import pl.coderslab.profile.Profile;
 import pl.coderslab.profile.ProfileService;
-import pl.coderslab.recurrence.Recurrence;
-import pl.coderslab.user.User;
+import pl.coderslab.recurrenceSet.RecurrenceSet;
 import pl.coderslab.workplace.Workplace;
 import pl.coderslab.workplace.WorkplaceRepository;
 import pl.coderslab.workplace.WorkplaceService;
@@ -16,6 +14,7 @@ import pl.coderslab.workplaceGroup.WorkplaceGroup;
 import pl.coderslab.workplaceGroup.WorkplaceGroupService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
@@ -48,8 +47,40 @@ public class TaskService {
         return taskRepository.findAllByWorkplaceId(workplaceId);
     }
 
-    public List<Task> getAllTasksByCategoryId(Long workplaceId, Long categoryId) {
-        return taskRepository.findAllByWorkplaceIdAndCategoryId(workplaceId, categoryId);
+    public Map<Category, List<Task>> getTasksByCategories(Long workplaceId, List<Task> tasks) {
+        Map<Category, List<Task>> map = new LinkedHashMap<>();
+
+        List<Category> categories = categoryService.getAllCategoriesByWorkplaceId(workplaceId)
+                .stream()
+                .sorted(Comparator.comparing(Category::getName, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+
+        for (Category category : categories) {
+            map.put(category, new ArrayList<>());
+        }
+
+        Category uncategorized = new Category();
+        uncategorized.setId(-1L);
+        uncategorized.setName("Uncategorized");
+        map.put(uncategorized, new ArrayList<>());
+
+        for (Task task : tasks) {
+            Category category = task.getCategory();
+            if (category != null && map.containsKey(category)) {
+                map.get(category).add(task);
+            } else {
+                map.get(uncategorized).add(task);
+            }
+        }
+
+        for (Map.Entry<Category, List<Task>> entry : map.entrySet()) {
+            List<Task> sortedTasks = entry.getValue().stream()
+                    .sorted(Comparator.comparing((Task t) -> !t.isActive()))
+                    .collect(Collectors.toList());
+            entry.setValue(sortedTasks);
+        }
+
+        return map;
     }
 
     public void addTaskToWorkplace(Task task, Long workplaceId) {
@@ -102,10 +133,20 @@ public class TaskService {
         taskRepository.save(task);
     }
 
-    public void addRecurrenceToTask(Long taskId, Recurrence recurrence) {
+    public void setRecurrenceSetToTask(Long taskId, RecurrenceSet recurrenceSet) {
         Task task = getTaskById(taskId);
-        task.getRecurrences().add(recurrence);
+        task.setRecurrenceSet(recurrenceSet);
         taskRepository.save(task);
+    }
+
+    public void removeRecurrenceSetFromTask(Long taskId) {
+        Task task = getTaskById(taskId);
+        task.setRecurrenceSet(null);
+        taskRepository.save(task);
+    }
+
+    public List<Task> getAllTasksByRecurrenceSet(Long recurrenceSetId) {
+        return taskRepository.findAllByRecurrenceSetId(recurrenceSetId);
     }
 
     public void removeGroupFromTask(Long groupId, Long taskId) {
@@ -124,43 +165,5 @@ public class TaskService {
         Task task = getTaskById(taskId);
         task.setCategory(null);
         taskRepository.save(task);
-    }
-
-    public List<Task> getAllTasksByRecurrence(Long recurrence_id) {
-        return taskRepository.findAllByRecurrenceId(recurrence_id);
-    }
-
-    public Map<Category, List<Task>> getTasksByCategories(Long workplaceId, List<Task> tasks) {
-        // Use LinkedHashMap to preserve sorted order
-        Map<Category, List<Task>> map = new LinkedHashMap<>();
-
-        // Get and sort categories alphabetically (case-insensitive)
-        List<Category> categories = categoryService.getAllCategoriesByWorkplaceId(workplaceId)
-                .stream()
-                .sorted(Comparator.comparing(Category::getName, String.CASE_INSENSITIVE_ORDER))
-                .toList();
-
-        // Add sorted categories first
-        for (Category category : categories) {
-            map.put(category, new ArrayList<>());
-        }
-
-        // Create "Uncategorized" category and add it LAST
-        Category uncategorized = new Category();
-        uncategorized.setId(-1L);
-        uncategorized.setName("Uncategorized");
-        map.put(uncategorized, new ArrayList<>());
-
-        // Assign tasks to the correct category
-        for (Task task : tasks) {
-            Category category = task.getCategory();
-            if (category != null && map.containsKey(category)) {
-                map.get(category).add(task);
-            } else {
-                map.get(uncategorized).add(task);
-            }
-        }
-
-        return map;
     }
 }

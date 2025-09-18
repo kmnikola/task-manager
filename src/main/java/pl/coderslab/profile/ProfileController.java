@@ -50,7 +50,7 @@ public class ProfileController {
     @PostMapping("/{profile_id}/delete")
     public String removeProfile(@PathVariable("workplace_id") Long workplace_id,
                                 @PathVariable("profile_id") Long profile_id) {
-        profileService.removeProfileFromWorkplace(profile_id);
+        profileService.deleteProfile(profile_id);
         return "redirect:/workplaces/" + workplace_id + "/profiles";
     }
 }

@@ -1,19 +1,23 @@
-<!-- File: templates/navbar.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <title>Navbar Example</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <title>Navbar Example</title>
 </head>
 <body>
 <div th:fragment="navbar">
-  <nav sec:authorize="isAuthenticated()">
-    <ul>
-      <li><a th:href="@{/workplaces}">Home</a></li>
-      <li><a th:href="@{/account}">Account</a></li>
-      <li><a th:href="@{/logout}">Logout</a></li>
-    </ul>
-  </nav>
+    <nav sec:authorize="isAuthenticated()">
+        <ul>
+            <li><a th:href="@{/workplaces}">Home</a></li>
+            <li><a th:href="@{/account}">Account</a></li>
+            <li>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit">Logout</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
 </div>
 </body>
 </html>
