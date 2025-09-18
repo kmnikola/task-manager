@@ -4,7 +4,7 @@ A Spring Boot-based application for collaborative task management for small team
 
 The workplaces can be shared. The application splits the functionality between the owner of the workplace who manages the tasks and their attributes, and view-only users who can fulfill a task on their end.
 
-The software is meant for use in dynamic work environments, where keeping track of work responsibilites is key to the team's success, but difficult to track otherwise. (e.g. the service sector)
+The software is meant for use in dynamic work environments, where keeping track of work responsibilites is key to the team's success, but difficult to track otherwise. (e.g. the HORECA sector)
 
 ## Features
 
